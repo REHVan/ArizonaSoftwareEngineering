@@ -7,74 +7,90 @@
        ENVIRONMENT DIVISION.
        INPUT-OUTPUT SECTION.
        FILE-CONTROL.
-      *    Create variable called INPUT-FILE and assigns it to the
       *    Input file
-      *    ORGANIZATION = line sequential means each line ends with
-      *    a newline character, similar to other languages
            SELECT INPUT-FILE
            ASSIGN TO "InCollege-Input.txt"
            ORGANIZATION IS LINE SEQUENTIAL.
-           
+      *    Output log file (KAN-41/42: dual output)
+           SELECT OUTPUT-FILE
+           ASSIGN TO "InCollege-Output.txt"
+           ORGANIZATION IS LINE SEQUENTIAL.
+
        DATA DIVISION.
        FILE SECTION.
-      *    File descriptor and record required for file processing
-      *    Record defines layout of the input.
-      *    We have our input file as just a singular user input per line
-      *    So we create a variable that fits all choices a user can make
        FD INPUT-FILE.
            01 INPUT-RECORD.
                05 USER-INPUT PIC X(50).
+       FD OUTPUT-FILE.
+           01 OUTPUT-RECORD PIC X(80).
        WORKING-STORAGE SECTION.
-           01 EOF PIC X(1) VALUE 'N'.
-       PROCEDURE DIVISION.
-      *    Start of program, opens file and displays menu
-           OPEN INPUT INPUT-FILE
-           DISPLAY "Welcome to InCollege!".
-           DISPLAY "Log In".
-           DISPLAY "Create New Account.".
-           DISPLAY "Enter your choice: " WITH NO ADVANCING.
-      *    Each instance of the reading verb will read one of what our
-      *    organization is. In our case, each use of read will read
-      *    one line from our file.
-           READ INPUT-FILE.
-           
-      *    Check if user inputted to login or create new account
-      *    PERFORM is very similar to function call. will jump to 
-      *    LOGIN and CREATE function depending on input
-      *    Note that execution will return here when function finishes.
-           IF USER-INPUT = "Log In"
-               DISPLAY USER-INPUT
-               PERFORM LOGIN
+           01 EOF     PIC X(1) VALUE 'N'.
+           01 LOG-MSG PIC X(80) VALUE SPACES.
 
+       PROCEDURE DIVISION.
+           OPEN INPUT  INPUT-FILE
+           OPEN OUTPUT OUTPUT-FILE
+           MOVE "Welcome to InCollege!" TO LOG-MSG
+           PERFORM WRITE-OUTPUT
+           MOVE "Log In" TO LOG-MSG
+           PERFORM WRITE-OUTPUT
+           MOVE "Create New Account." TO LOG-MSG
+           PERFORM WRITE-OUTPUT
+           MOVE "Enter your choice: " TO LOG-MSG
+           PERFORM WRITE-OUTPUT
+           READ INPUT-FILE.
+
+           IF USER-INPUT = "Log In"
+               MOVE USER-INPUT TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               PERFORM LOGIN
            ELSE
                IF USER-INPUT = "Create New Account"
-                   DISPLAY USER-INPUT
+                   MOVE USER-INPUT TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
                    PERFORM CREATE-ACCOUNT.
+
        LOGIN.
-      *    This print statement is just for debugging
-           DISPLAY "LOGIN PART".
-           DISPLAY "Please enter your username: " WITH NO ADVANCING.
+           MOVE "LOGIN PART" TO LOG-MSG
+           PERFORM WRITE-OUTPUT
+           MOVE "Please enter your username: " TO LOG-MSG
+           PERFORM WRITE-OUTPUT
            READ INPUT-FILE.
-           DISPLAY USER-INPUT.
-           DISPLAY "Please enter your password: " WITH NO ADVANCING.
+           MOVE USER-INPUT TO LOG-MSG
+           PERFORM WRITE-OUTPUT
+           MOVE "Please enter your password: " TO LOG-MSG
+           PERFORM WRITE-OUTPUT
            READ INPUT-FILE.
-           DISPLAY USER-INPUT.
-      *    TODO Check if user exists
-           DISPLAY "Logged in Successfully!"
-      *    Transition into post login.
-           CLOSE INPUT-FILE.
+           MOVE USER-INPUT TO LOG-MSG
+           PERFORM WRITE-OUTPUT
+           MOVE "Logged in Successfully!" TO LOG-MSG
+           PERFORM WRITE-OUTPUT
+           CLOSE INPUT-FILE
+           CLOSE OUTPUT-FILE
            STOP RUN.
 
        CREATE-ACCOUNT.
-           DISPLAY "CREATE ACCOUNT PART".
-           DISPLAY "Please enter your username: " WITH NO ADVANCING.
+           MOVE "CREATE ACCOUNT PART" TO LOG-MSG
+           PERFORM WRITE-OUTPUT
+           MOVE "Please enter your username: " TO LOG-MSG
+           PERFORM WRITE-OUTPUT
            READ INPUT-FILE.
-           DISPLAY USER-INPUT.
-      *    To do: password validation    
-           DISPLAY "Please enter your password: " WITH NO ADVANCING.
+           MOVE USER-INPUT TO LOG-MSG
+           PERFORM WRITE-OUTPUT
+           MOVE "Please enter your password: " TO LOG-MSG
+           PERFORM WRITE-OUTPUT
            READ INPUT-FILE.
-           DISPLAY USER-INPUT.
-           DISPLAY "Account Created!"
-      *    Transition into post login.
-           CLOSE INPUT-FILE.
+           MOVE USER-INPUT TO LOG-MSG
+           PERFORM WRITE-OUTPUT
+           MOVE "Account Created!" TO LOG-MSG
+           PERFORM WRITE-OUTPUT
+           CLOSE INPUT-FILE
+           CLOSE OUTPUT-FILE
            STOP RUN.
+
+      *    KAN-41/42: Dual output - display to console AND write to file
+      *    TRIM ensures both outputs are identical (no trailing spaces)
+       WRITE-OUTPUT.
+           MOVE FUNCTION TRIM(LOG-MSG TRAILING) TO OUTPUT-RECORD
+           DISPLAY OUTPUT-RECORD
+           WRITE OUTPUT-RECORD.
