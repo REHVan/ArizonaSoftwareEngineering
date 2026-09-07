@@ -207,6 +207,7 @@
                    PERFORM WRITE-OUTPUT
                    CLOSE INPUT-FILE OUTPUT-FILE
                    STOP RUN
+               END-READ
                MOVE "1. Search for a job" TO LOG-MSG
                PERFORM WRITE-OUTPUT
                MOVE "2. Find someone you know" TO LOG-MSG
@@ -254,6 +255,7 @@
                    PERFORM WRITE-OUTPUT
                    CLOSE INPUT-FILE OUTPUT-FILE
                    STOP RUN
+               END-READ
                MOVE "Learn a New Skill:" TO LOG-MSG
                PERFORM WRITE-OUTPUT
                MOVE "Communication" TO LOG-MSG
