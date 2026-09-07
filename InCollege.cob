@@ -15,20 +15,29 @@
            SELECT OUTPUT-FILE
            ASSIGN TO "InCollege-Output.txt"
            ORGANIZATION IS LINE SEQUENTIAL.
-
+           
+           SELECT ACCOUNTS-FILE
+           ASSIGN TO "InCollege-Accounts.txt"
+           ORGANIZATION IS LINE SEQUENTIAL.
        DATA DIVISION.
        FILE SECTION.
        FD INPUT-FILE.
            01 INPUT-RECORD.
-               05 USER-INPUT PIC X(50).
+               05 USER-INPUT PIC X(80).
        FD OUTPUT-FILE.
            01 OUTPUT-RECORD PIC X(80).
-
+       
+       FD ACCOUNTS-FILE.
+           01 ACCOUNTS-RECORD.
+               05 ACCOUNT-USER PIC X(11).
+               05 ACCOUNT-SEPARATOR PIC X(1).
+               05 ACCOUNT-PASS PIC X(12).
        WORKING-STORAGE SECTION.
-           01 EOF     PIC X(1) VALUE 'N'.
+           01 ACCOUNTS-EOF     PIC X(1) VALUE 'N'.
            01 LOG-MSG PIC X(80) VALUE SPACES.
            01 STRING-MESSAGE PIC X(80) VALUE SPACES.
            01 USER-NAME PIC X(80).
+           01 NUM-ACCOUNTS PIC 9(1).
            01 IS-VALID PIC X VALUE 'N'.
                88 PASSWORD-VALID VALUE 'Y'.
                88 PASSWORD-INVALID VALUE 'N'.
@@ -39,8 +48,9 @@
            01 PASSWORD_hasSpec PIC X(1) VALUE 'N'.
            01 PASSWORD_CHARACTER PIC X(1).
        PROCEDURE DIVISION.
-           OPEN INPUT  INPUT-FILE
-           OPEN OUTPUT OUTPUT-FILE
+           OPEN INPUT INPUT-FILE.
+           OPEN OUTPUT OUTPUT-FILE.
+       MAIN.
            MOVE "Welcome to InCollege!" TO LOG-MSG
            PERFORM WRITE-OUTPUT
            MOVE "Log In" TO LOG-MSG
@@ -83,7 +93,10 @@
            PERFORM WRITE-OUTPUT
            PERFORM POST-LOGIN.
        CREATE-ACCOUNT.
+           PERFORM ACCOUNT-LIMIT-CHECK.
+           OPEN EXTEND ACCOUNTS-FILE.
            READ INPUT-FILE
+           MOVE USER-INPUT TO USER-NAME.
            STRING "Please enter your username: " DELIMITED BY SIZE
                    USER-INPUT DELIMITED BY SPACE 
              INTO STRING-MESSAGE
@@ -91,15 +104,42 @@
            MOVE STRING-MESSAGE TO LOG-MSG.
            PERFORM WRITE-OUTPUT.
            INITIALIZE STRING-MESSAGE.
-           MOVE USER-INPUT TO USER-NAME.
+           MOVE USER-INPUT TO ACCOUNT-USER.
+           MOVE SPACE TO ACCOUNT-SEPARATOR.
       *    PERFORM PASSWORD-VALIDATION.
+           READ INPUT-FILE
+           STRING "Please enter your password: " DELIMITED BY SIZE
+                   USER-INPUT DELIMITED BY SPACE 
+             INTO STRING-MESSAGE
+           END-STRING.
+           MOVE STRING-MESSAGE TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           INITIALIZE STRING-MESSAGE.
+           MOVE USER-INPUT TO ACCOUNT-PASS.
            MOVE "Account Created Successfully!" TO LOG-MSG
            PERFORM WRITE-OUTPUT
+           WRITE ACCOUNTS-RECORD.
            PERFORM POST-LOGIN.         
 
-
-      *    After login/create account successful
-      *    Move to this section where it will display s
+       
+       ACCOUNT-LIMIT-CHECK.
+           OPEN INPUT ACCOUNTS-FILE
+           PERFORM UNTIL ACCOUNTS-EOF = 'Y'
+               READ ACCOUNTS-FILE
+                   AT END
+                       MOVE 'Y' TO ACCOUNTS-EOF
+                   NOT AT END
+                       ADD 1 TO NUM-ACCOUNTS
+               END-READ
+           END-PERFORM.
+           IF NUM-ACCOUNTS = 5
+               MOVE "All permitted accounts have been created, please co
+      -        "me back later." TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               CLOSE ACCOUNTS-FILE
+               PERFORM MAIN
+           END-IF.
+           CLOSE ACCOUNTS-FILE.
        POST-LOGIN.
            STRING "Welcome, " DELIMITED BY SIZE
                    USER-NAME DELIMITED BY SPACE
@@ -111,7 +151,6 @@
            INITIALIZE STRING-MESSAGE.
            PERFORM MENU-SELECT.
       
-
        MENU-SELECT.
            PERFORM UNTIL USER-INPUT = '4'
                READ INPUT-FILE
