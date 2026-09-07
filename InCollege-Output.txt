@@ -1,8 +1,42 @@
 Welcome to InCollege!
 Log In
 Create New Account.
-Enter your choice: Create New Account
+Enter your choice: Log In
 Please enter your username: JohnDoe1234
-Please enter your password: John6769420@!@@@@!$
-Account Created Successfully!
+Please enter your password: sdijdfifj2i3!A
+Logged in Successfully!
 Welcome, JohnDoe1234!
+1. Search for a job
+2. Find someone you know
+3. Learn a new skill
+4. Logout
+Enter your choice: 1
+Job search is under construction.
+1. Search for a job
+2. Find someone you know
+3. Learn a new skill
+4. Logout
+Enter your choice: 3
+Learn a New Skill:
+Communication
+Coding
+Teamwork
+Leadership
+Critical Thinking
+Go Back
+Enter your choice: Coding
+Coding skill is under construction.
+Learn a New Skill:
+Communication
+Coding
+Teamwork
+Leadership
+Critical Thinking
+Go Back
+Enter your choice: Go Back
+1. Search for a job
+2. Find someone you know
+3. Learn a new skill
+4. Logout
+Enter your choice: 4
+Logging out
