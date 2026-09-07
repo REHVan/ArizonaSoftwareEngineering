@@ -1,0 +1,8 @@
+Welcome to InCollege!
+Log In
+Create New Account.
+Enter your choice: Create New Account
+Please enter your username: JohnDoe1234
+Please enter your password: John6769420@!@@@@!$
+Account Created Successfully!
+Welcome, JohnDoe1234!

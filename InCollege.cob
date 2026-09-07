@@ -26,7 +26,8 @@
        WORKING-STORAGE SECTION.
            01 EOF     PIC X(1) VALUE 'N'.
            01 LOG-MSG PIC X(80) VALUE SPACES.
-
+           01 STRING-MESSAGE PIC X(80) VALUE SPACES.
+           01 USER-NAME PIC X(80).
        PROCEDURE DIVISION.
            OPEN INPUT  INPUT-FILE
            OPEN OUTPUT OUTPUT-FILE
@@ -36,58 +37,81 @@
            PERFORM WRITE-OUTPUT
            MOVE "Create New Account." TO LOG-MSG
            PERFORM WRITE-OUTPUT
-           MOVE "Enter your choice: " TO LOG-MSG
-           PERFORM WRITE-OUTPUT
            READ INPUT-FILE.
-
+           STRING "Enter your choice: " DELIMITED BY SIZE
+                   USER-INPUT DELIMITED BY SIZE
+             INTO STRING-MESSAGE
+           END-STRING.
+           MOVE STRING-MESSAGE TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           INITIALIZE STRING-MESSAGE.
            IF USER-INPUT = "Log In"
-               MOVE USER-INPUT TO LOG-MSG
-               PERFORM WRITE-OUTPUT
                PERFORM LOGIN
            ELSE
                IF USER-INPUT = "Create New Account"
-                   MOVE USER-INPUT TO LOG-MSG
-                   PERFORM WRITE-OUTPUT
                    PERFORM CREATE-ACCOUNT.
 
        LOGIN.
-           MOVE "LOGIN PART" TO LOG-MSG
-           PERFORM WRITE-OUTPUT
-           MOVE "Please enter your username: " TO LOG-MSG
-           PERFORM WRITE-OUTPUT
-           READ INPUT-FILE.
-           MOVE USER-INPUT TO LOG-MSG
-           PERFORM WRITE-OUTPUT
-           MOVE "Please enter your password: " TO LOG-MSG
-           PERFORM WRITE-OUTPUT
-           READ INPUT-FILE.
-           MOVE USER-INPUT TO LOG-MSG
-           PERFORM WRITE-OUTPUT
+           READ INPUT-FILE
+           STRING "Please enter your username: " DELIMITED BY SIZE
+                   USER-INPUT DELIMITED BY SPACE 
+             INTO STRING-MESSAGE
+           END-STRING.
+           MOVE STRING-MESSAGE TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           INITIALIZE STRING-MESSAGE.
+           MOVE USER-INPUT TO USER-NAME.
+           READ INPUT-FILE
+           STRING "Please enter your password: " DELIMITED BY SIZE
+                   USER-INPUT DELIMITED BY SPACE 
+             INTO STRING-MESSAGE
+           END-STRING.
+           MOVE STRING-MESSAGE TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           INITIALIZE STRING-MESSAGE.
            MOVE "Logged in Successfully!" TO LOG-MSG
            PERFORM WRITE-OUTPUT
-           CLOSE INPUT-FILE
-           CLOSE OUTPUT-FILE
-           STOP RUN.
+           PERFORM POST-LOGIN.
+
 
        CREATE-ACCOUNT.
-           MOVE "CREATE ACCOUNT PART" TO LOG-MSG
+           READ INPUT-FILE
+           STRING "Please enter your username: " DELIMITED BY SIZE
+                   USER-INPUT DELIMITED BY SPACE 
+             INTO STRING-MESSAGE
+           END-STRING.
+           MOVE STRING-MESSAGE TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           INITIALIZE STRING-MESSAGE.
+           MOVE USER-INPUT TO USER-NAME.
+           READ INPUT-FILE
+           STRING "Please enter your password: " DELIMITED BY SIZE
+                   USER-INPUT DELIMITED BY SPACE 
+             INTO STRING-MESSAGE
+           END-STRING.
+           MOVE STRING-MESSAGE TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           INITIALIZE STRING-MESSAGE.
+           MOVE "Account Created Successfully!" TO LOG-MSG
            PERFORM WRITE-OUTPUT
-           MOVE "Please enter your username: " TO LOG-MSG
-           PERFORM WRITE-OUTPUT
-           READ INPUT-FILE.
-           MOVE USER-INPUT TO LOG-MSG
-           PERFORM WRITE-OUTPUT
-           MOVE "Please enter your password: " TO LOG-MSG
-           PERFORM WRITE-OUTPUT
-           READ INPUT-FILE.
-           MOVE USER-INPUT TO LOG-MSG
-           PERFORM WRITE-OUTPUT
-           MOVE "Account Created!" TO LOG-MSG
-           PERFORM WRITE-OUTPUT
-           CLOSE INPUT-FILE
-           CLOSE OUTPUT-FILE
-           STOP RUN.
+           PERFORM POST-LOGIN.
+  
+           
+       POST-LOGIN.
+           STRING "Welcome, " DELIMITED BY SIZE
+                   USER-NAME DELIMITED BY SPACE
+                   "!" 
+             INTO STRING-MESSAGE
+           END-STRING.
+           MOVE STRING-MESSAGE TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           INITIALIZE STRING-MESSAGE.
 
+
+
+           CLOSE INPUT-FILE.
+           CLOSE OUTPUT-FILE.
+           STOP RUN.
       *    KAN-41/42: Dual output - display to console AND write to file
       *    TRIM ensures both outputs are identical (no trailing spaces)
        WRITE-OUTPUT.
