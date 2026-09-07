@@ -57,7 +57,12 @@
            PERFORM WRITE-OUTPUT
            MOVE "Create New Account." TO LOG-MSG
            PERFORM WRITE-OUTPUT
-           READ INPUT-FILE.
+           READ INPUT-FILE
+               AT END 
+                   MOVE "Input ended prematurely" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   CLOSE INPUT-FILE OUTPUT-FILE
+                   STOP RUN.
            STRING "Enter your choice: " DELIMITED BY SIZE
                    USER-INPUT DELIMITED BY SIZE
              INTO STRING-MESSAGE
@@ -72,6 +77,11 @@
                    PERFORM CREATE-ACCOUNT.
        LOGIN.
            READ INPUT-FILE
+               AT END 
+                   MOVE "Input ended prematurely" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   CLOSE INPUT-FILE OUTPUT-FILE
+                   STOP RUN.
            STRING "Please enter your username: " DELIMITED BY SIZE
                    USER-INPUT DELIMITED BY SPACE 
              INTO STRING-MESSAGE
@@ -81,6 +91,11 @@
            INITIALIZE STRING-MESSAGE.
            MOVE USER-INPUT TO USER-NAME.
            READ INPUT-FILE
+               AT END 
+                   MOVE "Input ended prematurely" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   CLOSE INPUT-FILE OUTPUT-FILE
+                   STOP RUN.
            STRING "Please enter your password: " DELIMITED BY SIZE
                    USER-INPUT DELIMITED BY SPACE 
              INTO STRING-MESSAGE
@@ -96,6 +111,11 @@
            PERFORM ACCOUNT-LIMIT-CHECK.
            OPEN EXTEND ACCOUNTS-FILE.
            READ INPUT-FILE
+               AT END 
+                   MOVE "Input ended prematurely" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   CLOSE INPUT-FILE OUTPUT-FILE
+                   STOP RUN.
            MOVE USER-INPUT TO USER-NAME.
            STRING "Please enter your username: " DELIMITED BY SIZE
                    USER-INPUT DELIMITED BY SPACE 
@@ -108,6 +128,11 @@
            MOVE SPACE TO ACCOUNT-SEPARATOR.
       *    PERFORM PASSWORD-VALIDATION.
            READ INPUT-FILE
+               AT END 
+                   MOVE "Input ended prematurely" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   CLOSE INPUT-FILE OUTPUT-FILE
+                   STOP RUN.
            STRING "Please enter your password: " DELIMITED BY SIZE
                    USER-INPUT DELIMITED BY SPACE 
              INTO STRING-MESSAGE
@@ -154,6 +179,11 @@
        MENU-SELECT.
            PERFORM UNTIL USER-INPUT = '4'
                READ INPUT-FILE
+               AT END
+                   MOVE "Input ended prematurely" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   CLOSE INPUT-FILE OUTPUT-FILE
+                   STOP RUN
                MOVE "1. Search for a job" TO LOG-MSG
                PERFORM WRITE-OUTPUT
                MOVE "2. Find someone you know" TO LOG-MSG
@@ -191,6 +221,11 @@
        SKILL-MENU.
            PERFORM UNTIL USER-INPUT = "Go Back"
                READ INPUT-FILE
+               AT END 
+                   MOVE "Input ended prematurely" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   CLOSE INPUT-FILE OUTPUT-FILE
+                   STOP RUN
                MOVE "Learn a New Skill:" TO LOG-MSG
                PERFORM WRITE-OUTPUT
                MOVE "Communication" TO LOG-MSG
