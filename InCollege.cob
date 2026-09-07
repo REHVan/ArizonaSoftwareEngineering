@@ -78,7 +78,7 @@
            MOVE STRING-MESSAGE TO LOG-MSG.
            PERFORM WRITE-OUTPUT.
            INITIALIZE STRING-MESSAGE.
-           PERFORM PASSWORD-VALIDATION.
+      *     PERFORM PASSWORD-VALIDATION.
            MOVE "Logged in Successfully!" TO LOG-MSG
            PERFORM WRITE-OUTPUT
            PERFORM POST-LOGIN.
@@ -92,11 +92,14 @@
            PERFORM WRITE-OUTPUT.
            INITIALIZE STRING-MESSAGE.
            MOVE USER-INPUT TO USER-NAME.
-           PERFORM PASSWORD-VALIDATION.
+      *    PERFORM PASSWORD-VALIDATION.
            MOVE "Account Created Successfully!" TO LOG-MSG
            PERFORM WRITE-OUTPUT
            PERFORM POST-LOGIN.         
 
+
+      *    After login/create account successful
+      *    Move to this section where it will display s
        POST-LOGIN.
            STRING "Welcome, " DELIMITED BY SIZE
                    USER-NAME DELIMITED BY SPACE
@@ -106,44 +109,94 @@
            MOVE STRING-MESSAGE TO LOG-MSG.
            PERFORM WRITE-OUTPUT.
            INITIALIZE STRING-MESSAGE.
-           MOVE "1. Search for a job" TO LOG-MSG
+           PERFORM MENU-SELECT.
+      
+
+       MENU-SELECT.
+           PERFORM UNTIL USER-INPUT = '4'
+               READ INPUT-FILE
+               MOVE "1. Search for a job" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "2. Find someone you know" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "3. Learn a new skill" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "4. Logout" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               STRING "Enter your choice: " DELIMITED BY SIZE
+                       USER-INPUT DELIMITED BY SPACE
+                   INTO STRING-MESSAGE
+               END-STRING
+               MOVE STRING-MESSAGE TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               INITIALIZE STRING-MESSAGE
+               EVALUATE USER-INPUT
+                   WHEN 1
+                       MOVE "Job search is under construction." 
+                       TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                   WHEN 2
+                       MOVE "Find someone you know is under construction
+      -                "." TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                   WHEN 3
+                       PERFORM SKILL-MENU
+               END-EVALUATE
+           END-PERFORM.
+           MOVE "Logging out" TO LOG-MSG.
            PERFORM WRITE-OUTPUT.
-           MOVE "2. Find someone you know" TO LOG-MSG.
-           PERFORM WRITE-OUTPUT.
-           MOVE "3. Learn a new skill" TO LOG-MSG.
-           PERFORM WRITE-OUTPUT.
-           READ INPUT-FILE.
-           STRING "Enter your choice: " DELIMITED BY SIZE
-                   USER-INPUT DELIMITED BY SPACE
-               INTO STRING-MESSAGE
-           END-STRING.
-           PERFORM WRITE-OUTPUT.
-           INITIALIZE STRING-MESSAGE.
-      *    TO DO: MAKE ACTUAL MENU
            CLOSE INPUT-FILE.
            CLOSE OUTPUT-FILE.
            STOP RUN.
        
+       SKILL-MENU.
+           PERFORM UNTIL USER-INPUT = "Go Back"
+               READ INPUT-FILE
+               MOVE "Learn a New Skill:" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "Communication" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "Coding" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "Teamwork" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "Leadership" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "Critical Thinking" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "Go Back" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               STRING "Enter your choice: " DELIMITED BY SIZE
+                       USER-INPUT DELIMITED BY SIZE
+                   INTO STRING-MESSAGE
+               END-STRING
+               MOVE STRING-MESSAGE TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               INITIALIZE STRING-MESSAGE
+               EVALUATE USER-INPUT
+                   WHEN "Communication"
+                       MOVE "Communication skill is under construction."
+                       TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                   WHEN "Coding"
+                       MOVE "Coding skill is under construction."
+                       TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                   WHEN "Teamwork"
+                       MOVE "Teamwork skill is under construction."
+                       TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                   WHEN "Leadership"
+                       MOVE "Leadership skill is under construction."
+                       TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                   WHEN "Critical Thinking"
+                       MOVE "Critical Thinking skill is under constructi
+      -                 "on." TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+               END-EVALUATE
+           END-PERFORM.
       
-       
-       PASSWORD-VALIDATION.
-           PERFORM UNTIL IS-VALID
-              READ INPUT-FILE.
-               MOVE 
-               STRING "Please enter your password: " DELIMITED BY SIZE
-                       USER-INPUT DELIMITED BY SPACE 
-               INTO STRING-MESSAGE
-               END-STRING.
-               MOVE STRING-MESSAGE TO LOG-MSG.
-               PERFORM WRITE-OUTPUT.
-               INITIALIZE STRING-MESSAGE.
-
-               IF USER-INPUT(8:1) NOT = SPACE
-                   MOVE 1 TO PASSWORD_isEight.
-               IF USER-INPUT(12:1) = SPACE.
-                   MOVE 1 TO PASSWORD_notTwelve.
-               
-               PERFORM VARYING
                 
       *    KAN-41/42: Dual output - display to console AND write to file
       *    TRIM ensures both outputs are identical (no trailing spaces)                               
