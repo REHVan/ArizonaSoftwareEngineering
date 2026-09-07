@@ -16,12 +16,15 @@
            ASSIGN TO "InCollege-Output.txt"
            ORGANIZATION IS LINE SEQUENTIAL.
            
+      *    Existing accounts file
            SELECT ACCOUNTS-FILE
            ASSIGN TO "InCollege-Accounts.txt"
            ORGANIZATION IS LINE SEQUENTIAL.
        DATA DIVISION.
+      *    File descriptions for input output and existing account files
        FILE SECTION.
        FD INPUT-FILE.
+      *    Input file 
            01 INPUT-RECORD.
                05 USER-INPUT PIC X(80).
        FD OUTPUT-FILE.
@@ -38,6 +41,8 @@
            01 STRING-MESSAGE PIC X(80) VALUE SPACES.
            01 USER-NAME PIC X(80).
            01 NUM-ACCOUNTS PIC 9(1).
+
+      *    Password checkers
            01 IS-VALID PIC X VALUE 'N'.
                88 PASSWORD-VALID VALUE 'Y'.
                88 PASSWORD-INVALID VALUE 'N'.
@@ -47,34 +52,45 @@
            01 PASSWORD_hasNum PIC X(1) VALUE 'N'.
            01 PASSWORD_hasSpec PIC X(1) VALUE 'N'.
            01 PASSWORD_CHARACTER PIC X(1).
+        
        PROCEDURE DIVISION.
+      *    Open input and output files at the start
            OPEN INPUT INPUT-FILE.
            OPEN OUTPUT OUTPUT-FILE.
        MAIN.
+      *    Title, will be presented again if num accounts > 5 AND
+      *    if user tries to create 6th account
            MOVE "Welcome to InCollege!" TO LOG-MSG
            PERFORM WRITE-OUTPUT
            MOVE "Log In" TO LOG-MSG
            PERFORM WRITE-OUTPUT
            MOVE "Create New Account." TO LOG-MSG
            PERFORM WRITE-OUTPUT
+      *    Every read of the input file will have a checker for EOF
+      *    Will terminate program and close files if EOF reached early
            READ INPUT-FILE
                AT END 
                    MOVE "Input ended prematurely" TO LOG-MSG
                    PERFORM WRITE-OUTPUT
                    CLOSE INPUT-FILE OUTPUT-FILE
                    STOP RUN.
+      *    Keeps choices and input on one line.
            STRING "Enter your choice: " DELIMITED BY SIZE
                    USER-INPUT DELIMITED BY SIZE
              INTO STRING-MESSAGE
            END-STRING.
            MOVE STRING-MESSAGE TO LOG-MSG.
            PERFORM WRITE-OUTPUT.
+      *    Reset for use of one variable per time we have a selection
            INITIALIZE STRING-MESSAGE.
+      *    Jump to login or create new depending on user action
            IF USER-INPUT = "Log In"
                PERFORM LOGIN
            ELSE
                IF USER-INPUT = "Create New Account"
                    PERFORM CREATE-ACCOUNT.
+
+      *    TODO: IMPELEMENT LOGIN VALIDATION
        LOGIN.
            READ INPUT-FILE
                AT END 
@@ -148,6 +164,8 @@
 
        
        ACCOUNT-LIMIT-CHECK.
+      *    Opens existing files and runs through the file
+      *    Adds 1 to NUM-ACCOUNTS per read
            OPEN INPUT ACCOUNTS-FILE
            PERFORM UNTIL ACCOUNTS-EOF = 'Y'
                READ ACCOUNTS-FILE
@@ -157,6 +175,9 @@
                        ADD 1 TO NUM-ACCOUNTS
                END-READ
            END-PERFORM.
+      *    Check num-accounts after read, if = 5, print message and send
+      *    user back to main 
+      *    Else continue execution back to CREATE-ACCOUNT
            IF NUM-ACCOUNTS = 5
                MOVE "All permitted accounts have been created, please co
       -        "me back later." TO LOG-MSG
@@ -177,6 +198,8 @@
            PERFORM MENU-SELECT.
       
        MENU-SELECT.
+      *    User selects category in menu, will bring user back to menu
+      *    Until user logs out (4)
            PERFORM UNTIL USER-INPUT = '4'
                READ INPUT-FILE
                AT END
@@ -212,6 +235,7 @@
                        PERFORM SKILL-MENU
                END-EVALUATE
            END-PERFORM.
+      *    Execution reaches here when user enters 4, code terminates
            MOVE "Logging out" TO LOG-MSG.
            PERFORM WRITE-OUTPUT.
            CLOSE INPUT-FILE.
@@ -219,6 +243,10 @@
            STOP RUN.
        
        SKILL-MENU.
+      *    Shows user list of skills to learn, each option other than
+      *    Go back will display message, menu will keep appearing until
+      *    User enters Go Back, where execution will continue back in
+      *    Menu select.
            PERFORM UNTIL USER-INPUT = "Go Back"
                READ INPUT-FILE
                AT END 
