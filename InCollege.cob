@@ -41,7 +41,6 @@
            01 STRING-MESSAGE PIC X(80) VALUE SPACES.
            01 USER-NAME PIC X(80).
            01 NUM-ACCOUNTS PIC 9(1).
-
       *    Password checkers
            01 IS-VALID PIC X VALUE 'N'.
                88 PASSWORD-VALID VALUE 'Y'.
@@ -84,11 +83,18 @@
       *    Reset for use of one variable per time we have a selection
            INITIALIZE STRING-MESSAGE.
       *    Jump to login or create new depending on user action
-           IF USER-INPUT = "Log In"
-               PERFORM LOGIN
-           ELSE
-               IF USER-INPUT = "Create New Account"
-                   PERFORM CREATE-ACCOUNT.
+           EVALUATE USER-INPUT
+               WHEN "Log In"
+                   PERFORM LOGIN
+               WHEN "Create New Account"
+                   PERFORM CREATE-ACCOUNT
+               WHEN OTHER
+                   MOVE "Unknown Option" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   CLOSE INPUT-FILE
+                   CLOSE OUTPUT-FILE
+                   STOP RUN
+           END-EVALUATE.
 
       *    TODO: IMPELEMENT LOGIN VALIDATION
        LOGIN.
@@ -133,7 +139,7 @@
                    CLOSE INPUT-FILE OUTPUT-FILE
                    STOP RUN.
            MOVE USER-INPUT TO USER-NAME.
-           STRING "Please enter your username: " DELIMITED BY SIZE
+           STRING "Please create your username: " DELIMITED BY SIZE
                    USER-INPUT DELIMITED BY SPACE 
              INTO STRING-MESSAGE
            END-STRING.
@@ -149,7 +155,7 @@
                    PERFORM WRITE-OUTPUT
                    CLOSE INPUT-FILE OUTPUT-FILE
                    STOP RUN.
-           STRING "Please enter your password: " DELIMITED BY SIZE
+           STRING "Please create your password: " DELIMITED BY SIZE
                    USER-INPUT DELIMITED BY SPACE 
              INTO STRING-MESSAGE
            END-STRING.
@@ -160,6 +166,7 @@
            MOVE "Account Created Successfully!" TO LOG-MSG
            PERFORM WRITE-OUTPUT
            WRITE ACCOUNTS-RECORD.
+           CLOSE ACCOUNTS-FILE.
            PERFORM POST-LOGIN.         
 
        
@@ -175,6 +182,7 @@
                        ADD 1 TO NUM-ACCOUNTS
                END-READ
            END-PERFORM.
+           CLOSE ACCOUNTS-FILE.
       *    Check num-accounts after read, if = 5, print message and send
       *    user back to main 
       *    Else continue execution back to CREATE-ACCOUNT
@@ -182,10 +190,8 @@
                MOVE "All permitted accounts have been created, please co
       -        "me back later." TO LOG-MSG
                PERFORM WRITE-OUTPUT
-               CLOSE ACCOUNTS-FILE
                PERFORM MAIN
            END-IF.
-           CLOSE ACCOUNTS-FILE.
        POST-LOGIN.
            STRING "Welcome, " DELIMITED BY SIZE
                    USER-NAME DELIMITED BY SPACE
@@ -234,6 +240,12 @@
                        PERFORM WRITE-OUTPUT
                    WHEN 3
                        PERFORM SKILL-MENU
+                   WHEN NOT 4
+                       MOVE "Unknown Option" TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                       CLOSE INPUT-FILE
+                       CLOSE OUTPUT-FILE
+                       STOP RUN
                END-EVALUATE
            END-PERFORM.
       *    Execution reaches here when user enters 4, code terminates
@@ -298,6 +310,12 @@
                        MOVE "Critical Thinking skill is under constructi
       -                 "on." TO LOG-MSG
                        PERFORM WRITE-OUTPUT
+                   WHEN NOT "Go Back"
+                       MOVE "Unknown Option" TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                       CLOSE INPUT-FILE
+                       CLOSE OUTPUT-FILE
+                       STOP RUN
                END-EVALUATE
            END-PERFORM.
       
