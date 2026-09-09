@@ -138,6 +138,7 @@
                        PERFORM WRITE-OUTPUT
                        CLOSE INPUT-FILE OUTPUT-FILE
                        STOP RUN
+               END-READ
                STRING "Please enter your password: " DELIMITED BY SIZE
                        USER-INPUT DELIMITED BY SPACE 
                  INTO STRING-MESSAGE
