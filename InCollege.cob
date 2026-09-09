@@ -10,12 +10,14 @@
       *    Input file
            SELECT INPUT-FILE
            ASSIGN TO "InCollege-Input.txt"
-           ORGANIZATION IS LINE SEQUENTIAL.
+           ORGANIZATION IS LINE SEQUENTIAL
+           FILE STATUS IS INPUT-FILE-STATUS.
       *    Output log file (KAN-41/42: dual output)
            SELECT OUTPUT-FILE
            ASSIGN TO "InCollege-Output.txt"
-           ORGANIZATION IS LINE SEQUENTIAL.
-           
+           ORGANIZATION IS LINE SEQUENTIAL
+           FILE STATUS IS OUTPUT-FILE-STATUS.
+
       *    Existing accounts file
            SELECT ACCOUNTS-FILE
            ASSIGN TO "InCollege-Accounts.txt"
@@ -37,7 +39,10 @@
                05 ACCOUNT-PASS PIC X(12).
        WORKING-STORAGE SECTION.
            01 ACCOUNTS-EOF     PIC X(1) VALUE 'N'.
-
+           01 INPUT-FILE-STATUS PIC XX.
+               88 INPUT-NOT-FOUND VALUE "35".
+           01 OUTPUT-FILE-STATUS PIC XX.
+               88 OUTPUT-NOT-FOUND VALUE "35".
       *    Login Validation flags
            01 LOGIN-STATUS PIC X(1) VALUE 'N'.
                88 LOGIN-VALID-TRUE VALUE 'Y'.
@@ -47,9 +52,17 @@
                88 USERNAME-UNIQUE-TRUE VALUE 'Y'.
                88 USERNAME-UNIQUE-FALSE VALUE 'N'.
       
+           01 USERNAME-BLANK PIC X(1) VALUE 'N'.
+               88 USERNAME-BLANK-TRUE VALUE 'Y'.
+               88 USERNAME-BLANK-FALSE VALUE 'N'.
+
+           01 USERNAME-SPACE PIC X(1) VALUE 'N'.
+               88 USERNAME-SPACE-TRUE VALUE 'Y'.
+               88 USERNAME-SPACE-FALSE VALUE 'N'.
       *    A Variable to preserve unqiuely identified usernames
            01 NEW-USERNAME PIC X(80).
-
+           01 USERNAME-CHARACTER-INDEX PIC 99 VALUE 0.
+           01 USERNAME-LENGTH PIC 99.
            01 LOG-MSG PIC X(80) VALUE SPACES.
            01 STRING-MESSAGE PIC X(80) VALUE SPACES.
            01 USER-NAME PIC X(80).
@@ -69,8 +82,15 @@
         
        PROCEDURE DIVISION.
       *    Open input and output files at the start
-           OPEN INPUT INPUT-FILE.
-           OPEN OUTPUT OUTPUT-FILE.
+           OPEN INPUT INPUT-FILE
+           IF INPUT-NOT-FOUND THEN
+               STOP RUN
+           END-IF.
+           OPEN OUTPUT OUTPUT-FILE 
+           IF OUTPUT-NOT-FOUND THEN
+               STOP RUN
+           END-IF.
+
        MAIN.
       *    Title, will be presented again if num accounts > 5 AND
       *    if user tries to create 6th account
@@ -193,7 +213,8 @@
       *    Assume username is NOT unique until proven true
            SET USERNAME-UNIQUE-FALSE TO TRUE.
       *    Keep trying to create a new account until username is unique
-           PERFORM UNTIL USERNAME-UNIQUE-TRUE
+           PERFORM UNTIL USERNAME-UNIQUE-TRUE AND USERNAME-BLANK-FALSE
+           AND USERNAME-SPACE-FALSE
                READ INPUT-FILE
                    AT END 
                        MOVE "Input ended prematurely" TO LOG-MSG
@@ -204,7 +225,7 @@
       *    Preserves username
                MOVE USER-INPUT TO NEW-USERNAME
                MOVE USER-INPUT TO USER-NAME
-               
+
                STRING "Please create your username: " DELIMITED BY SIZE
                        USER-INPUT DELIMITED BY SPACE 
                  INTO STRING-MESSAGE
@@ -216,11 +237,20 @@
       *    Check if username is unique
            PERFORM USERNAME-VALIDATION
       *    If username is not unique, display message and repeat
-               IF USERNAME-UNIQUE-FALSE
-                   MOVE "Username already exists, please try again" 
+               EVALUATE TRUE
+                   WHEN USERNAME-BLANK-TRUE
+                       MOVE "Username cannot be blank, please try again"
                        TO LOG-MSG
-                   PERFORM WRITE-OUTPUT
-               END-IF
+                       PERFORM WRITE-OUTPUT
+                   WHEN USERNAME-SPACE-TRUE
+                       MOVE "Username cannot have spaces, please try aga
+      -                 "in." TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                   WHEN USERNAME-UNIQUE-FALSE
+                       MOVE "Username already exists, please try again" 
+                       TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+               END-EVALUATE
            END-PERFORM.
 
       *    If username is unique, proceed and store unqiue ID
@@ -264,10 +294,25 @@
        USERNAME-VALIDATION.
       *    Assume a unique username until proven otherwise
            SET USERNAME-UNIQUE-TRUE TO TRUE.
+           SET USERNAME-BLANK-FALSE TO TRUE.
+           SET USERNAME-SPACE-FALSE TO TRUE.
       *    Make sure to reset EOF flag before reading file
            MOVE 'N' TO ACCOUNTS-EOF.
       *    Open accounts file and compare user input
            OPEN INPUT ACCOUNTS-FILE.
+           
+           IF NEW-USERNAME = SPACES
+               SET USERNAME-BLANK-TRUE TO TRUE
+           END-IF.
+           
+           COMPUTE USERNAME-LENGTH = FUNCTION LENGTH (FUNCTION TRIM
+                                                     (NEW-USERNAME))
+           PERFORM VARYING USERNAME-CHARACTER-INDEX FROM 1 BY 1
+           UNTIL USERNAME-CHARACTER-INDEX > USERNAME-LENGTH
+               IF NEW-USERNAME(USERNAME-CHARACTER-INDEX:1) = SPACE
+                   SET USERNAME-SPACE-TRUE TO TRUE
+               END-IF
+           END-PERFORM.
       *    Search existing usernames
            PERFORM UNTIL ACCOUNTS-EOF = 'Y' 
                OR USERNAME-UNIQUE-FALSE
@@ -276,7 +321,6 @@
                        MOVE 'Y' TO ACCOUNTS-EOF
                    NOT AT END
                        IF NEW-USERNAME = ACCOUNT-USER
-                       OR NEW-USERNAME = SPACES
                            SET USERNAME-UNIQUE-FALSE TO TRUE
                        END-IF
                END-READ

@@ -2,10 +2,10 @@ Welcome to InCollege!
 Log In
 Create New Account.
 Enter your choice: Create New Account
-Please create your username:
-Please create your password: tEstpass!3
+Please create your username: JohnDoe123
+Please create your password: tEstpass3@
 Account Created Successfully!
-Welcome, !
+Welcome, JohnDoe123!
 1. Search for a job
 2. Find someone you know
 3. Learn a new skill
