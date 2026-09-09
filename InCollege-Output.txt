@@ -3,8 +3,8 @@ Log In
 Create New Account.
 Enter your choice: Log In
 Please enter your username: JohnDoe1234
-Please enter your password: sdijdfifj2i3!A
-Logged in Successfully!
+Please enter your password: sdijdf3!A
+You have successfully logged in
 Welcome, JohnDoe1234!
 1. Search for a job
 2. Find someone you know
