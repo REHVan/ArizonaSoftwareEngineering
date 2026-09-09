@@ -32,25 +32,40 @@
        
        FD ACCOUNTS-FILE.
            01 ACCOUNTS-RECORD.
-               05 ACCOUNT-USER PIC X(11).
+               05 ACCOUNT-USER PIC X(80).
                05 ACCOUNT-SEPARATOR PIC X(1).
                05 ACCOUNT-PASS PIC X(12).
        WORKING-STORAGE SECTION.
            01 ACCOUNTS-EOF     PIC X(1) VALUE 'N'.
+
+      *    Login Validation flags
+           01 LOGIN-STATUS PIC X(1) VALUE 'N'.
+               88 LOGIN-VALID-TRUE VALUE 'Y'.
+               88 LOGIN-VALID-FALSE VALUE 'N'.
+      *    Username validation flags
+           01 USERNAME-STATUS PIC X(1) VALUE 'N'.
+               88 USERNAME-UNIQUE-TRUE VALUE 'Y'.
+               88 USERNAME-UNIQUE-FALSE VALUE 'N'.
+      
+      *    A Variable to preserve unqiuely identified usernames
+           01 NEW-USERNAME PIC X(80).
+
            01 LOG-MSG PIC X(80) VALUE SPACES.
            01 STRING-MESSAGE PIC X(80) VALUE SPACES.
            01 USER-NAME PIC X(80).
            01 NUM-ACCOUNTS PIC 9(1).
-      *    Password checkers
+
+      *    Password validation flags
            01 IS-VALID PIC X VALUE 'N'.
                88 PASSWORD-VALID VALUE 'Y'.
                88 PASSWORD-INVALID VALUE 'N'.
-           01 PASSWORD_isEight PIC X(1) VALUE 'N'.
-           01 PASSWORD_notTwelve PIC X(1) VALUE 'N'.
-           01 PASSWORD_hasDigit PIC X(1) VALUE 'N'.
-           01 PASSWORD_hasNum PIC X(1) VALUE 'N'.
-           01 PASSWORD_hasSpec PIC X(1) VALUE 'N'.
-           01 PASSWORD_CHARACTER PIC X(1).
+           01 PASSWORD-CHARACTER PIC X(1).
+           01 PASSWORD-CHARACTER-INDEX PIC 99 VALUE 0.
+           01 PASSWORD-CHARACTER-LENGTH PIC 99 VALUE 0.
+           01 PASSWORD-LENGTH-VALID PIC X(1) VALUE 'N'.
+           01 PASSWORD-HAS-UPPERCASE PIC X(1) VALUE 'N'.
+           01 PASSWORD-HAS-DIGIT PIC X(1) VALUE 'N'.
+           01 PASSWORD-HAS-SPECIAL PIC X(1) VALUE 'N'.
         
        PROCEDURE DIVISION.
       *    Open input and output files at the start
@@ -96,82 +111,261 @@
                    STOP RUN
            END-EVALUATE.
 
-      *    TODO: IMPELEMENT LOGIN VALIDATION
        LOGIN.
-           READ INPUT-FILE
-               AT END 
-                   MOVE "Input ended prematurely" TO LOG-MSG
+      *    Opens existing accounts file and runs through the file
+      *    Assume LOGIN-VALID is false until proven true
+           SET LOGIN-VALID-FALSE TO TRUE.
+      *    Keep trying to log in until user validates credentials
+           PERFORM UNTIL LOGIN-VALID-TRUE
+               READ INPUT-FILE
+                   AT END 
+                       MOVE "Input ended prematurely" TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                       CLOSE INPUT-FILE OUTPUT-FILE
+                       STOP RUN
+               END-READ
+               STRING "Please enter your username: " DELIMITED BY SIZE
+                       USER-INPUT DELIMITED BY SPACE 
+                 INTO STRING-MESSAGE
+               END-STRING
+               MOVE STRING-MESSAGE TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               INITIALIZE STRING-MESSAGE
+               MOVE USER-INPUT TO USER-NAME
+               READ INPUT-FILE
+                   AT END 
+                       MOVE "Input ended prematurely" TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                       CLOSE INPUT-FILE OUTPUT-FILE
+                       STOP RUN
+               STRING "Please enter your password: " DELIMITED BY SIZE
+                       USER-INPUT DELIMITED BY SPACE 
+                 INTO STRING-MESSAGE
+               END-STRING
+               MOVE STRING-MESSAGE TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               INITIALIZE STRING-MESSAGE
+
+      *    Validate login before going to post-login menu
+               PERFORM LOGIN-VALIDATION
+
+      *    If no matching account was found, display message and repeat
+               IF LOGIN-VALID-FALSE
+                   MOVE "Incorrect username/password, please try again" 
+                       TO LOG-MSG
                    PERFORM WRITE-OUTPUT
-                   CLOSE INPUT-FILE OUTPUT-FILE
-                   STOP RUN.
-           STRING "Please enter your username: " DELIMITED BY SIZE
-                   USER-INPUT DELIMITED BY SPACE 
-             INTO STRING-MESSAGE
-           END-STRING.
-           MOVE STRING-MESSAGE TO LOG-MSG.
-           PERFORM WRITE-OUTPUT.
-           INITIALIZE STRING-MESSAGE.
-           MOVE USER-INPUT TO USER-NAME.
-           READ INPUT-FILE
-               AT END 
-                   MOVE "Input ended prematurely" TO LOG-MSG
-                   PERFORM WRITE-OUTPUT
-                   CLOSE INPUT-FILE OUTPUT-FILE
-                   STOP RUN.
-           STRING "Please enter your password: " DELIMITED BY SIZE
-                   USER-INPUT DELIMITED BY SPACE 
-             INTO STRING-MESSAGE
-           END-STRING.
-           MOVE STRING-MESSAGE TO LOG-MSG.
-           PERFORM WRITE-OUTPUT.
-           INITIALIZE STRING-MESSAGE.
-      *     PERFORM PASSWORD-VALIDATION.
-           MOVE "Logged in Successfully!" TO LOG-MSG
+               END-IF
+           END-PERFORM.
+
+           MOVE "You have successfully logged in" TO LOG-MSG
            PERFORM WRITE-OUTPUT
            PERFORM POST-LOGIN.
+
+       LOGIN-VALIDATION.
+      *    Opens existing accounts file and runs through the file
+      *    If username and password match, login is valid
+      *    Assume LOGIN-VALID is false until proven true
+           SET LOGIN-VALID-FALSE TO TRUE.
+      *    Make sure to reset EOF flag before reading file
+           MOVE 'N' TO ACCOUNTS-EOF.
+      *    Open accounts file and compare user input
+           OPEN INPUT ACCOUNTS-FILE.
+
+      *    Search continues until EOF is reached or login is valid
+           PERFORM UNTIL ACCOUNTS-EOF = 'Y' 
+               OR LOGIN-VALID-TRUE
+               READ ACCOUNTS-FILE
+      *    If EOF is reached, set flag to exit loop
+                   AT END
+                       MOVE 'Y' TO ACCOUNTS-EOF
+      *    If not EOF, check if username and password match
+                   NOT AT END
+                       IF USER-NAME = ACCOUNT-USER 
+                           AND USER-INPUT = ACCOUNT-PASS
+                           SET LOGIN-VALID-TRUE TO TRUE
+                       END-IF
+               END-READ
+           END-PERFORM.
+           CLOSE ACCOUNTS-FILE.
        CREATE-ACCOUNT.
            PERFORM ACCOUNT-LIMIT-CHECK.
-           OPEN EXTEND ACCOUNTS-FILE.
-           READ INPUT-FILE
-               AT END 
-                   MOVE "Input ended prematurely" TO LOG-MSG
+      *    Assume username is NOT unique until proven true
+           SET USERNAME-UNIQUE-FALSE TO TRUE.
+      *    Keep trying to create a new account until username is unique
+           PERFORM UNTIL USERNAME-UNIQUE-TRUE
+               READ INPUT-FILE
+                   AT END 
+                       MOVE "Input ended prematurely" TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                       CLOSE INPUT-FILE OUTPUT-FILE
+                       STOP RUN
+               END-READ
+      *    Preserves username
+               MOVE USER-INPUT TO NEW-USERNAME
+               MOVE USER-INPUT TO USER-NAME
+               STRING "Please create your username: " DELIMITED BY SIZE
+                       USER-INPUT DELIMITED BY SPACE 
+                 INTO STRING-MESSAGE
+               END-STRING
+               MOVE STRING-MESSAGE TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               INITIALIZE STRING-MESSAGE
+
+      *    Check if username is unique
+           PERFORM USERNAME-VALIDATION
+      *    If username is not unique, display message and repeat
+               IF USERNAME-UNIQUE-FALSE
+                   MOVE "Username already exists, please try again" 
+                       TO LOG-MSG
                    PERFORM WRITE-OUTPUT
-                   CLOSE INPUT-FILE OUTPUT-FILE
-                   STOP RUN.
-           MOVE USER-INPUT TO USER-NAME.
-           STRING "Please create your username: " DELIMITED BY SIZE
-                   USER-INPUT DELIMITED BY SPACE 
-             INTO STRING-MESSAGE
-           END-STRING.
-           MOVE STRING-MESSAGE TO LOG-MSG.
-           PERFORM WRITE-OUTPUT.
-           INITIALIZE STRING-MESSAGE.
-           MOVE USER-INPUT TO ACCOUNT-USER.
+               END-IF
+           END-PERFORM.
+
+      *    If username is unique, proceed and store unqiue ID
+           MOVE NEW-USERNAME TO ACCOUNT-USER.
            MOVE SPACE TO ACCOUNT-SEPARATOR.
-      *    PERFORM PASSWORD-VALIDATION.
-           READ INPUT-FILE
-               AT END 
-                   MOVE "Input ended prematurely" TO LOG-MSG
+      *    username is unique, continueing adding account
+           OPEN EXTEND ACCOUNTS-FILE.
+
+      *    REPEAT PASSWORD-VALIDATION UNTIL PASSWORD IS VALID
+           MOVE 'N' TO IS-VALID.
+           PERFORM UNTIL PASSWORD-VALID
+               READ INPUT-FILE
+                   AT END 
+                       MOVE "Input ended prematurely" TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                       CLOSE INPUT-FILE OUTPUT-FILE
+                       STOP RUN
+                   END-READ
+               STRING "Please create your password: " DELIMITED BY SIZE
+                       USER-INPUT DELIMITED BY SPACE 
+                 INTO STRING-MESSAGE
+               END-STRING
+               MOVE STRING-MESSAGE TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               INITIALIZE STRING-MESSAGE
+               PERFORM PASSWORD-VALIDATION
+      *    If password is invalid, display message and repeat
+               IF PASSWORD-INVALID
+                   MOVE "Password is invalid. Please try again." 
+                   TO LOG-MSG
                    PERFORM WRITE-OUTPUT
-                   CLOSE INPUT-FILE OUTPUT-FILE
-                   STOP RUN.
-           STRING "Please create your password: " DELIMITED BY SIZE
-                   USER-INPUT DELIMITED BY SPACE 
-             INTO STRING-MESSAGE
-           END-STRING.
-           MOVE STRING-MESSAGE TO LOG-MSG.
-           PERFORM WRITE-OUTPUT.
-           INITIALIZE STRING-MESSAGE.
+               END-IF
+           END-PERFORM.
            MOVE USER-INPUT TO ACCOUNT-PASS.
            MOVE "Account Created Successfully!" TO LOG-MSG
            PERFORM WRITE-OUTPUT
            WRITE ACCOUNTS-RECORD.
            CLOSE ACCOUNTS-FILE.
-           PERFORM POST-LOGIN.         
-
+           PERFORM POST-LOGIN.
        
+       USERNAME-VALIDATION.
+      *    Assume a unique username until proven otherwise
+           SET USERNAME-UNIQUE-TRUE TO TRUE.
+      *    Make sure to reset EOF flag before reading file
+           MOVE 'N' TO ACCOUNTS-EOF.
+      *    Open accounts file and compare user input
+           OPEN INPUT ACCOUNTS-FILE.
+      *    Search existing usernames
+           PERFORM UNTIL ACCOUNTS-EOF = 'Y' 
+               OR USERNAME-UNIQUE-FALSE
+               READ ACCOUNTS-FILE
+                   AT END
+                       MOVE 'Y' TO ACCOUNTS-EOF
+                   NOT AT END
+                       IF NEW-USERNAME = ACCOUNT-USER
+                           SET USERNAME-UNIQUE-FALSE TO TRUE
+                       END-IF
+               END-READ
+           END-PERFORM.
+           CLOSE ACCOUNTS-FILE.
+
+       PASSWORD-VALIDATION.
+      *    Validates password based on length, uppercase, digit, and special 
+
+      *    Reset all validation flags before checking a password
+           MOVE 'N' TO IS-VALID.
+           MOVE 'N' TO PASSWORD-LENGTH-VALID.
+           MOVE 'N' TO PASSWORD-HAS-UPPERCASE.
+           MOVE 'N' TO PASSWORD-HAS-DIGIT.
+           MOVE 'N' TO PASSWORD-HAS-SPECIAL.
+           MOVE 0 to PASSWORD-CHARACTER-LENGTH.
+
+      *    Index through at most 80 chars
+           PERFORM VARYING PASSWORD-CHARACTER-INDEX FROM 1 BY 1
+               UNTIL PASSWORD-CHARACTER-INDEX > 80
+      *    If the character is not a space, then it's part of the password
+               IF USER-INPUT(PASSWORD-CHARACTER-INDEX:1) NOT = SPACE
+      *    Save final position to find password length, then exit loop
+                   MOVE PASSWORD-CHARACTER-INDEX 
+                       TO PASSWORD-CHARACTER-LENGTH
+               END-IF
+           END-PERFORM.
+
+      *    CHECK VALID PASSWORD LENGTH
+           MOVE 'N' TO PASSWORD-LENGTH-VALID
+      *    If the password length is between 8 and 12 chars, it's valid
+           IF PASSWORD-CHARACTER-LENGTH >= 8 
+               AND PASSWORD-CHARACTER-LENGTH <= 12
+               MOVE 'Y' TO PASSWORD-LENGTH-VALID
+           END-IF
+
+      *    CHECK PASSWORD FOR UPPERCASE, DIGIT, AND SPECIAL CHARACTER
+           MOVE 'N' TO PASSWORD-HAS-UPPERCASE
+           MOVE 'N' TO PASSWORD-HAS-DIGIT
+           MOVE 'N' TO PASSWORD-HAS-SPECIAL
+
+      *    Move index until reaching password length
+           PERFORM VARYING PASSWORD-CHARACTER-INDEX FROM 1 BY 1
+               UNTIL PASSWORD-CHARACTER-INDEX > 
+                   PASSWORD-CHARACTER-LENGTH
+
+               MOVE USER-INPUT(PASSWORD-CHARACTER-INDEX:1)
+                   TO PASSWORD-CHARACTER
+               
+      *        Check if a character is uppercase
+               IF PASSWORD-CHARACTER >= 'A' 
+                   AND PASSWORD-CHARACTER <= 'Z'
+                   MOVE 'Y' TO PASSWORD-HAS-UPPERCASE
+               END-IF
+
+      *        Check if a character is a digit
+               IF PASSWORD-CHARACTER >= '0' 
+                   AND PASSWORD-CHARACTER <= '9'
+                   MOVE 'Y' TO PASSWORD-HAS-DIGIT
+               END-IF
+
+      *        Check if a character is a special character
+                IF (PASSWORD-CHARACTER >= '!' 
+                     AND PASSWORD-CHARACTER <= '/')
+                     OR (PASSWORD-CHARACTER >= ':' 
+                     AND PASSWORD-CHARACTER <= '@')
+                     OR (PASSWORD-CHARACTER >= '[' 
+                     AND PASSWORD-CHARACTER <= '`')
+                     OR (PASSWORD-CHARACTER >= '{' 
+                     AND PASSWORD-CHARACTER <= '~')
+                     MOVE 'Y' TO PASSWORD-HAS-SPECIAL
+                END-IF
+           END-PERFORM
+
+      *    If all password requirements are met, the password is valid:
+      *    - Length between 8 and 12 characters
+      *    - Contains at least one uppercase letter
+      *    - Contains at least one digit
+      *    - Contains at least one special character
+              IF PASSWORD-LENGTH-VALID = 'Y' 
+                AND PASSWORD-HAS-UPPERCASE = 'Y' 
+                AND PASSWORD-HAS-DIGIT = 'Y' 
+                AND PASSWORD-HAS-SPECIAL = 'Y'
+                MOVE 'Y' TO IS-VALID
+              END-IF.
+
        ACCOUNT-LIMIT-CHECK.
       *    Opens existing files and runs through the file
+
+           MOVE 'N' TO ACCOUNTS-EOF.
+           MOVE 0 TO NUM-ACCOUNTS.
+
       *    Adds 1 to NUM-ACCOUNTS per read
            OPEN INPUT ACCOUNTS-FILE
            PERFORM UNTIL ACCOUNTS-EOF = 'Y'
@@ -186,7 +380,7 @@
       *    Check num-accounts after read, if = 5, print message and send
       *    user back to main 
       *    Else continue execution back to CREATE-ACCOUNT
-           IF NUM-ACCOUNTS = 5
+           IF NUM-ACCOUNTS >= 5
                MOVE "All permitted accounts have been created, please co
       -        "me back later." TO LOG-MSG
                PERFORM WRITE-OUTPUT
