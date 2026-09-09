@@ -11,4 +11,4 @@ Welcome, testuser!
 3. Learn a new skill
 4. Logout
 Enter your choice: 5
-Unknown Options
+Unknown Option
