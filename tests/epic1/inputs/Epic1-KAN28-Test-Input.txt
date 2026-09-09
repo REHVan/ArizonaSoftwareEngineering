@@ -1,8 +1,0 @@
-Log In
-testuser
-badpass1!
-testuser
-badpass2!
-testuser
-Passw0rd!1
-4

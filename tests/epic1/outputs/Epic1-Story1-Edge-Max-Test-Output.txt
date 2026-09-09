@@ -1,0 +1,16 @@
+Welcome to InCollege!
+Log In
+Create New Account.
+Enter your choice: Create New Account
+Please create your username: edgemax
+Please create your password: Abcdefghi12!X
+Password is invalid. Please try again.
+Please create your password: Abcdefgh12!X
+Account Created Successfully!
+Welcome, edgemax!
+1. Search for a job
+2. Find someone you know
+3. Learn a new skill
+4. Logout
+Enter your choice: 4
+Logging out

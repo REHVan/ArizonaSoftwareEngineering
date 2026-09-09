@@ -1,0 +1,14 @@
+Welcome to InCollege!
+Log In
+Create New Account.
+Enter your choice: Log In
+Please enter your username: maxuser
+Please enter your password: Abcdefgh12!X
+You have successfully logged in
+Welcome, maxuser!
+1. Search for a job
+2. Find someone you know
+3. Learn a new skill
+4. Logout
+Enter your choice: 4
+Logging out
