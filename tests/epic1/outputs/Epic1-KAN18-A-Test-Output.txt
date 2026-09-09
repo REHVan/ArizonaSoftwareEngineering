@@ -1,0 +1,24 @@
+Welcome to InCollege!
+Log In
+Create New Account.
+Enter your choice: Create New Account
+Please create your username: newuser
+Please create your password: Ab1!
+Password is invalid. Please try again.
+Please create your password: Abcdefghijk1!
+Password is invalid. Please try again.
+Please create your password: abcdefg1!
+Password is invalid. Please try again.
+Please create your password: Abcdefgh!
+Password is invalid. Please try again.
+Please create your password: Abcdefgh1
+Password is invalid. Please try again.
+Please create your password: Abcdef1!
+Account Created Successfully!
+Welcome, newuser!
+1. Search for a job
+2. Find someone you know
+3. Learn a new skill
+4. Logout
+Enter your choice: 4
+Logging out
