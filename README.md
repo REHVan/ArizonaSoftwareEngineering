@@ -61,6 +61,7 @@ Or run individual suites:
 
 | Script | Tickets | What it covers |
 |---|---|---|
+| `tests/test_KAN9_login_failure.sh` | KAN-9 | Wrong password/username error message, dual output check, valid login still works |
 | `tests/test_KAN18_account_creation.sh` | KAN-18 | Valid creation, empty inputs, 50-char PIC X boundary |
 | `tests/test_KAN28_login.sh` | KAN-28 | Successful login, invalid menu choice, empty credentials |
 | `tests/test_KAN31_37_menus.sh` | KAN-31, KAN-37 | Unexpected input timeout guard; Go Back stubs (activate when paragraphs are added) |

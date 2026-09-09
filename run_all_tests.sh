@@ -15,6 +15,7 @@ echo ""
 SUITES=(
     "tests/test_KAN18_account_creation.sh"
     "tests/test_KAN28_login.sh"
+    "tests/test_KAN9_login_failure.sh"
     "tests/test_KAN31_37_menus.sh"
     "tests/test_KAN24_persistence.sh"
     "test_dual_output.sh"
