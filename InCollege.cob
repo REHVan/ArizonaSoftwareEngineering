@@ -235,7 +235,7 @@
                    AT END 
                        MOVE "Input ended prematurely" TO LOG-MSG
                        PERFORM WRITE-OUTPUT
-                       CLOSE INPUT-FILE OUTPUT-FILE
+                       CLOSE INPUT-FILE OUTPUT-FILE ACCOUNTS-FILE
                        STOP RUN
                    END-READ
                STRING "Please create your password: " DELIMITED BY SIZE
@@ -274,7 +274,7 @@
                    AT END
                        MOVE 'Y' TO ACCOUNTS-EOF
                    NOT AT END
-                       IF NEW-USERNAME = ACCOUNT-USER
+                       IF NEW-USERNAME = ACCOUNT-USER 
                            SET USERNAME-UNIQUE-FALSE TO TRUE
                        END-IF
                END-READ
@@ -300,6 +300,9 @@
       *    Save final position to find password length, then exit loop
                    MOVE PASSWORD-CHARACTER-INDEX 
                        TO PASSWORD-CHARACTER-LENGTH
+      *    Exit perform if space detected as password cannot have space
+               ELSE
+                   EXIT PERFORM
                END-IF
            END-PERFORM.
 
@@ -337,14 +340,8 @@
                END-IF
 
       *        Check if a character is a special character
-                IF (PASSWORD-CHARACTER >= '!' 
-                     AND PASSWORD-CHARACTER <= '/')
-                     OR (PASSWORD-CHARACTER >= ':' 
-                     AND PASSWORD-CHARACTER <= '@')
-                     OR (PASSWORD-CHARACTER >= '[' 
-                     AND PASSWORD-CHARACTER <= '`')
-                     OR (PASSWORD-CHARACTER >= '{' 
-                     AND PASSWORD-CHARACTER <= '~')
+                IF PASSWORD-CHARACTER IS NOT ALPHABETIC
+                   AND PASSWORD-CHARACTER IS NOT NUMERIC
                      MOVE 'Y' TO PASSWORD-HAS-SPECIAL
                 END-IF
            END-PERFORM
@@ -358,6 +355,7 @@
                 AND PASSWORD-HAS-UPPERCASE = 'Y' 
                 AND PASSWORD-HAS-DIGIT = 'Y' 
                 AND PASSWORD-HAS-SPECIAL = 'Y'
+                AND USER-INPUT NOT = SPACES
                 MOVE 'Y' TO IS-VALID
               END-IF.
 
