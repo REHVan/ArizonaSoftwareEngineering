@@ -204,6 +204,7 @@
       *    Preserves username
                MOVE USER-INPUT TO NEW-USERNAME
                MOVE USER-INPUT TO USER-NAME
+               
                STRING "Please create your username: " DELIMITED BY SIZE
                        USER-INPUT DELIMITED BY SPACE 
                  INTO STRING-MESSAGE
@@ -274,7 +275,8 @@
                    AT END
                        MOVE 'Y' TO ACCOUNTS-EOF
                    NOT AT END
-                       IF NEW-USERNAME = ACCOUNT-USER 
+                       IF NEW-USERNAME = ACCOUNT-USER
+                       OR NEW-USERNAME = SPACES
                            SET USERNAME-UNIQUE-FALSE TO TRUE
                        END-IF
                END-READ
