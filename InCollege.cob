@@ -39,6 +39,7 @@
                05 ACCOUNT-PASS PIC X(12).
        WORKING-STORAGE SECTION.
            01 ACCOUNTS-EOF     PIC X(1) VALUE 'N'.
+           01 MENU-EOF         PIC X(1) VALUE 'N'.
            01 INPUT-FILE-STATUS PIC XX.
                88 INPUT-NOT-FOUND VALUE "35".
            01 OUTPUT-FILE-STATUS PIC XX.
@@ -444,55 +445,76 @@
       
        MENU-SELECT.
       *    User selects category in menu, will bring user back to menu
-      *    Until user logs out (4)
-           PERFORM UNTIL USER-INPUT = '4'
+      *    There is no logout option, the menu repeats until the input
+      *    file runs out, which ends the program without an error
+           PERFORM UNTIL MENU-EOF = 'Y'
+      *    Menu is shown before the read so it still appears when the
+      *    input file runs out at this prompt
+               MOVE "1. Create/Edit My Profile" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "2. View My Profile" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "3. Search for a job" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "4. Find someone you know" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "5. Learn a New Skill" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
                READ INPUT-FILE
                AT END
-                   MOVE "Input ended prematurely" TO LOG-MSG
+      *    Input running out here is a normal exit, so show the prompt
+      *    and stop instead of printing "Input ended prematurely"
+                   MOVE 'Y' TO MENU-EOF
+                   MOVE "Enter your choice:" TO LOG-MSG
                    PERFORM WRITE-OUTPUT
-                   CLOSE INPUT-FILE OUTPUT-FILE
-                   STOP RUN
+               NOT AT END
+                   STRING "Enter your choice: " DELIMITED BY SIZE
+                           USER-INPUT DELIMITED BY SPACE
+                       INTO STRING-MESSAGE
+                   END-STRING
+                   MOVE STRING-MESSAGE TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   INITIALIZE STRING-MESSAGE
+                   EVALUATE USER-INPUT
+                       WHEN "1"
+                           PERFORM CREATE-EDIT-PROFILE
+                       WHEN "2"
+                           PERFORM VIEW-PROFILE
+                       WHEN "3"
+                           MOVE "Job search is under construction."
+                           TO LOG-MSG
+                           PERFORM WRITE-OUTPUT
+                       WHEN "4"
+                           MOVE "Find someone you know is under construc
+      -                    "tion." TO LOG-MSG
+                           PERFORM WRITE-OUTPUT
+                       WHEN "5"
+                           PERFORM SKILL-MENU
+                       WHEN OTHER
+                           MOVE "Unknown Option" TO LOG-MSG
+                           PERFORM WRITE-OUTPUT
+                           CLOSE INPUT-FILE
+                           CLOSE OUTPUT-FILE
+                           STOP RUN
+                   END-EVALUATE
                END-READ
-               MOVE "1. Search for a job" TO LOG-MSG
-               PERFORM WRITE-OUTPUT
-               MOVE "2. Find someone you know" TO LOG-MSG
-               PERFORM WRITE-OUTPUT
-               MOVE "3. Learn a new skill" TO LOG-MSG
-               PERFORM WRITE-OUTPUT
-               MOVE "4. Logout" TO LOG-MSG
-               PERFORM WRITE-OUTPUT
-               STRING "Enter your choice: " DELIMITED BY SIZE
-                       USER-INPUT DELIMITED BY SPACE
-                   INTO STRING-MESSAGE
-               END-STRING
-               MOVE STRING-MESSAGE TO LOG-MSG
-               PERFORM WRITE-OUTPUT
-               INITIALIZE STRING-MESSAGE
-               EVALUATE USER-INPUT
-                   WHEN 1
-                       MOVE "Job search is under construction." 
-                       TO LOG-MSG
-                       PERFORM WRITE-OUTPUT
-                   WHEN 2
-                       MOVE "Find someone you know is under construction
-      -                "." TO LOG-MSG
-                       PERFORM WRITE-OUTPUT
-                   WHEN 3
-                       PERFORM SKILL-MENU
-                   WHEN NOT 4
-                       MOVE "Unknown Option" TO LOG-MSG
-                       PERFORM WRITE-OUTPUT
-                       CLOSE INPUT-FILE
-                       CLOSE OUTPUT-FILE
-                       STOP RUN
-               END-EVALUATE
            END-PERFORM.
-      *    Execution reaches here when user enters 4, code terminates
-           MOVE "Logging out" TO LOG-MSG.
-           PERFORM WRITE-OUTPUT.
+      *    Execution reaches here when the input file runs out
            CLOSE INPUT-FILE.
            CLOSE OUTPUT-FILE.
            STOP RUN.
+
+       CREATE-EDIT-PROFILE.
+      *    Option 1 placeholder, only shows the header for now
+      *    Full create/edit profile flow will be added later in Epic 2
+           MOVE "--- Create/Edit Profile ---" TO LOG-MSG
+           PERFORM WRITE-OUTPUT.
+
+       VIEW-PROFILE.
+      *    Option 2 placeholder, only shows the header for now
+      *    Profile display will be added later in Epic 2
+           MOVE "--- Your Profile ---" TO LOG-MSG
+           PERFORM WRITE-OUTPUT.
        
        SKILL-MENU.
       *    Shows user list of skills to learn, each option other than
@@ -560,8 +582,9 @@
       
                 
       *    KAN-41/42: Dual output - display to console AND write to file
-      *    TRIM ensures both outputs are identical (no trailing spaces)                               
+      *    KAN-101: The file WRITE drops trailing spaces, so DISPLAY
+      *    trims them too so screen and file lines are byte-identical
        WRITE-OUTPUT.
            MOVE FUNCTION TRIM(LOG-MSG TRAILING) TO OUTPUT-RECORD
-           DISPLAY OUTPUT-RECORD
+           DISPLAY FUNCTION TRIM(OUTPUT-RECORD TRAILING)
            WRITE OUTPUT-RECORD.
