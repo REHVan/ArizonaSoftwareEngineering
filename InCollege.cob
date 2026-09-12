@@ -562,25 +562,9 @@
            END-IF.
            PERFORM WRITE-OUTPUT.
            OPEN OUTPUT PROFILE-FILE.
-
-           MOVE "Enter first name: " TO PROFILE-PROMPT.
+       
+      *    Function to get input and keeps it all on one line
            PERFORM GET-INPUT.
-           MOVE USER-INPUT TO PROFILE-FIRSTNAME
-           PERFORM WRITE-OUTPUT.
-
-           MOVE "Enter last name: " TO PROFILE-PROMPT.
-           PERFORM GET-INPUT.
-           MOVE USER-INPUT TO PROFILE-LASTNAME.
-           PERFORM WRITE-OUTPUT.
-           
-      *    Save name to user profile file
-           STRING "Name: " DELIMITED BY SIZE
-                   PROFILE-FIRSTNAME DELIMITED BY SPACE
-                   " " DELIMITED BY SIZE
-                   PROFILE-LASTNAME DELIMITED BY SPACE
-             INTO PROFILE-LOG
-           END-STRING.
-           PERFORM WRITE-PROFILE.
            CLOSE PROFILE-FILE.
 
        GET-INPUT.
