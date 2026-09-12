@@ -64,8 +64,12 @@
                88 LOGIN-VALID-FALSE VALUE 'N'.
       *    Username validation flags
            01 PROFILE-PROMPT PIC X(80).
-      *    File that hold user profile
            
+           01 PROFILE-PREFIX PIC X(80).
+           01 PROFILE-STRING PIC X(80).
+      *    File that hold user profile
+           01 PROFILE-FIRSTNAME PIC X(80).
+           01 PROFILE-LASTNAME PIC X(80).
            01 USERNAME-STATUS PIC X(1) VALUE 'N'.
                88 USERNAME-UNIQUE-TRUE VALUE 'Y'.
                88 USERNAME-UNIQUE-FALSE VALUE 'N'.
@@ -561,14 +565,24 @@
 
            MOVE "Enter first name: " TO PROFILE-PROMPT.
            PERFORM GET-INPUT.
+           MOVE USER-INPUT TO PROFILE-FIRSTNAME
            PERFORM WRITE-OUTPUT.
-           PERFORM WRITE-PROFILE.
 
            MOVE "Enter last name: " TO PROFILE-PROMPT.
            PERFORM GET-INPUT.
+           MOVE USER-INPUT TO PROFILE-LASTNAME.
            PERFORM WRITE-OUTPUT.
+           
+      *    Save name to user profile file
+           STRING "Name: " DELIMITED BY SIZE
+                   PROFILE-FIRSTNAME DELIMITED BY SPACE
+                   " " DELIMITED BY SIZE
+                   PROFILE-LASTNAME DELIMITED BY SPACE
+             INTO PROFILE-LOG
+           END-STRING.
            PERFORM WRITE-PROFILE.
            CLOSE PROFILE-FILE.
+
        GET-INPUT.
            READ INPUT-FILE
                AT END 
@@ -585,7 +599,6 @@
                      INTO STRING-MESSAGE
                    END-STRING
                    MOVE STRING-MESSAGE TO LOG-MSG
-                   MOVE USER-INPUT TO PROFILE-LOG
                END-READ.
                    
        VIEW-PROFILE.
@@ -594,6 +607,7 @@
 
       *    First checks if user tries to open a folder that does
       *    not exist
+           MOVE 'N' TO PROFILE-EOF.
            OPEN INPUT PROFILE-FILE
            IF PROFILE-FILE-STATUS = "35"
                MOVE "Your profile does not exist. Please create profile"
@@ -611,20 +625,20 @@
                    PERFORM WRITE-OUTPUT
                    EXIT PARAGRAPH
            END-READ.
+           CLOSE PROFILE-FILE
            MOVE "--- Your Profile ---" TO LOG-MSG
            PERFORM WRITE-OUTPUT.
-      *    OPEN INPUT PROFILE-FILE.
-      *    PERFORM UNTIL PROFILE-EOF = 'Y'
-      *        READ PROFILE-FILE
-      *            AT END
-      *                MOVE 'Y' TO EOF
-      *                CLOSE PROFILE-FILE
-      *            NOT AT END
-      *                PERFORM PRINT-PROFILE
-
-
-       PRINT-PROFILE.
-           
+           OPEN INPUT PROFILE-FILE.
+           PERFORM UNTIL PROFILE-EOF = 'Y'
+               READ PROFILE-FILE
+                   AT END
+                       MOVE 'Y' TO PROFILE-EOF
+                       CLOSE PROFILE-FILE
+                   NOT AT END
+                       MOVE PROFILE-RECORD TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                END-READ
+           END-PERFORM.
        SKILL-MENU.
       *    Shows user list of skills to learn, each option other than
       *    Go back will display message, menu will keep appearing until
