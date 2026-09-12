@@ -43,12 +43,12 @@
                05 ACCOUNT-SEPARATOR PIC X(1).
                05 ACCOUNT-PASS PIC X(12).
        FD PROFILE-FILE.
-           01 PROFILE-RECORD.
-               05 PROFILE-INPUT PIC X(200).
+           01 PROFILE-RECORD PIC X(200).
           
        WORKING-STORAGE SECTION.
            01 ACCOUNTS-EOF     PIC X(1) VALUE 'N'.
            01 MENU-EOF         PIC X(1) VALUE 'N'.
+           01 PROFILE-EOF      PIC X(1) VALUE 'N'.
            01 INPUT-FILE-STATUS PIC XX.
                88 INPUT-NOT-FOUND VALUE "35".
            01 OUTPUT-FILE-STATUS PIC XX.
@@ -63,7 +63,7 @@
                88 LOGIN-VALID-TRUE VALUE 'Y'.
                88 LOGIN-VALID-FALSE VALUE 'N'.
       *    Username validation flags
-           
+           01 PROFILE-PROMPT PIC X(80).
       *    File that hold user profile
            
            01 USERNAME-STATUS PIC X(1) VALUE 'N'.
@@ -82,6 +82,7 @@
            01 USERNAME-CHARACTER-INDEX PIC 99 VALUE 0.
            01 USERNAME-LENGTH PIC 99.
            01 LOG-MSG PIC X(80) VALUE SPACES.
+           01 PROFILE-LOG PIC X(200) VALUE SPACES.
            01 STRING-MESSAGE PIC X(80) VALUE SPACES.
            01 USER-NAME PIC X(80).
            01 NUM-ACCOUNTS PIC 9(1).
@@ -501,6 +502,7 @@
                    MOVE "Enter your choice:" TO LOG-MSG
                    PERFORM WRITE-OUTPUT
                NOT AT END
+                   INITIALIZE STRING-MESSAGE
                    STRING "Enter your choice: " DELIMITED BY SIZE
                            USER-INPUT DELIMITED BY SPACE 
                            INTO STRING-MESSAGE
@@ -556,6 +558,36 @@
            END-IF.
            PERFORM WRITE-OUTPUT.
            OPEN OUTPUT PROFILE-FILE.
+
+           MOVE "Enter first name: " TO PROFILE-PROMPT.
+           PERFORM GET-INPUT.
+           PERFORM WRITE-OUTPUT.
+           PERFORM WRITE-PROFILE.
+
+           MOVE "Enter last name: " TO PROFILE-PROMPT.
+           PERFORM GET-INPUT.
+           PERFORM WRITE-OUTPUT.
+           PERFORM WRITE-PROFILE.
+           CLOSE PROFILE-FILE.
+       GET-INPUT.
+           READ INPUT-FILE
+               AT END 
+                   MOVE "Input ended prematurely" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   CLOSE INPUT-FILE OUTPUT-FILE PROFILE-FILE
+                   STOP RUN
+               NOT AT END
+                   INITIALIZE STRING-MESSAGE
+                   STRING FUNCTION TRIM(PROFILE-PROMPT) 
+                       DELIMITED BY SIZE
+                       " " DELIMITED BY SIZE
+                       USER-INPUT DELIMITED BY SIZE
+                     INTO STRING-MESSAGE
+                   END-STRING
+                   MOVE STRING-MESSAGE TO LOG-MSG
+                   MOVE USER-INPUT TO PROFILE-LOG
+               END-READ.
+                   
        VIEW-PROFILE.
       *    Option 2 placeholder, only shows the header for now
       *    Profile display will be added later in Epic 2
@@ -581,6 +613,18 @@
            END-READ.
            MOVE "--- Your Profile ---" TO LOG-MSG
            PERFORM WRITE-OUTPUT.
+      *    OPEN INPUT PROFILE-FILE.
+      *    PERFORM UNTIL PROFILE-EOF = 'Y'
+      *        READ PROFILE-FILE
+      *            AT END
+      *                MOVE 'Y' TO EOF
+      *                CLOSE PROFILE-FILE
+      *            NOT AT END
+      *                PERFORM PRINT-PROFILE
+
+
+       PRINT-PROFILE.
+           
        SKILL-MENU.
       *    Shows user list of skills to learn, each option other than
       *    Go back will display message, menu will keep appearing until
@@ -654,3 +698,7 @@
            MOVE FUNCTION TRIM(LOG-MSG TRAILING) TO OUTPUT-RECORD
            DISPLAY FUNCTION TRIM(OUTPUT-RECORD TRAILING)
            WRITE OUTPUT-RECORD.
+       
+       WRITE-PROFILE.
+           MOVE FUNCTION TRIM(PROFILE-LOG) TO PROFILE-RECORD
+           WRITE PROFILE-RECORD.
