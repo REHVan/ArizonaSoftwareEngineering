@@ -1,22 +1,31 @@
 Welcome to InCollege!
 Log In
 Create New Account.
-Enter your choice: Create New Account
-Please create your username: JohnDoe123
-Please create your password: tEstpass3@
-Account Created Successfully!
-Welcome, JohnDoe123!
-1. Search for a job
-2. Find someone you know
-3. Learn a new skill
-4. Logout
+Enter your choice: Log In
+Please enter your username: JohnDoe123456
+Please enter your password: tEstpass3@!
+You have successfully logged in
+Welcome, JohnDoe123456!
+1. Create My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
 Enter your choice: 1
-Job search is under construction.
-1. Search for a job
-2. Find someone you know
-3. Learn a new skill
-4. Logout
+--- Create/Edit Profile ---
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
 Enter your choice: 3
+Job search is under construction.
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 5
 Learn a New Skill:
 Communication
 Coding
@@ -34,9 +43,10 @@ Leadership
 Critical Thinking
 Go Back
 Enter your choice: Go Back
-1. Search for a job
-2. Find someone you know
-3. Learn a new skill
-4. Logout
-Enter your choice: 4
-Logging out
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice:
+Logging out..

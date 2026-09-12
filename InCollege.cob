@@ -22,6 +22,11 @@
            SELECT ACCOUNTS-FILE
            ASSIGN TO "InCollege-Accounts.txt"
            ORGANIZATION IS LINE SEQUENTIAL.
+
+           SELECT USER-PROFILE-FILE
+           ASSIGN TO USER-DATA
+           ORGANIZATION IS LINE SEQUENTIAL
+           FILE STATUS IS PROFILE-FILE-STATUS.
        DATA DIVISION.
       *    File descriptions for input output and existing account files
        FILE SECTION.
@@ -37,6 +42,10 @@
                05 ACCOUNT-USER PIC X(80).
                05 ACCOUNT-SEPARATOR PIC X(1).
                05 ACCOUNT-PASS PIC X(12).
+       FD USER-PROFILE-FILE.
+           01 PROFILE-RECORD.
+               05 PROFILE-INPUT PIC X(200).
+          
        WORKING-STORAGE SECTION.
            01 ACCOUNTS-EOF     PIC X(1) VALUE 'N'.
            01 MENU-EOF         PIC X(1) VALUE 'N'.
@@ -44,11 +53,19 @@
                88 INPUT-NOT-FOUND VALUE "35".
            01 OUTPUT-FILE-STATUS PIC XX.
                88 OUTPUT-NOT-FOUND VALUE "35".
+           
+           01 PROFILE-FILE-STATUS PIC XX.
+               88 PROFILE-FOUND VALUE "00".
+               88 PROFILE-NOT-FOUND VALUE "35".
+           01 USER-DATA PIC X(80).
       *    Login Validation flags
            01 LOGIN-STATUS PIC X(1) VALUE 'N'.
                88 LOGIN-VALID-TRUE VALUE 'Y'.
                88 LOGIN-VALID-FALSE VALUE 'N'.
       *    Username validation flags
+           
+      *    File that hold user profile
+           
            01 USERNAME-STATUS PIC X(1) VALUE 'N'.
                88 USERNAME-UNIQUE-TRUE VALUE 'Y'.
                88 USERNAME-UNIQUE-FALSE VALUE 'N'.
@@ -80,7 +97,8 @@
            01 PASSWORD-HAS-UPPERCASE PIC X(1) VALUE 'N'.
            01 PASSWORD-HAS-DIGIT PIC X(1) VALUE 'N'.
            01 PASSWORD-HAS-SPECIAL PIC X(1) VALUE 'N'.
-        
+           
+           01 HAS-FILE PIC X(1) VALUE 'N'.
        PROCEDURE DIVISION.
       *    Open input and output files at the start
            OPEN INPUT INPUT-FILE
@@ -439,18 +457,33 @@
              INTO STRING-MESSAGE
            END-STRING.
            MOVE STRING-MESSAGE TO LOG-MSG.
+
            PERFORM WRITE-OUTPUT.
            INITIALIZE STRING-MESSAGE.
+           STRING "user-data/" DELIMITED BY SIZE
+                   USER-NAME DELIMITED BY SPACE
+                  ".txt" DELIMITED BY SIZE
+             INTO USER-DATA
+           END-STRING.
+           MOVE USER-DATA TO LOG-MSG
            PERFORM MENU-SELECT.
       
        MENU-SELECT.
+           
       *    User selects category in menu, will bring user back to menu
       *    There is no logout option, the menu repeats until the input
       *    file runs out, which ends the program without an error
            PERFORM UNTIL MENU-EOF = 'Y'
       *    Menu is shown before the read so it still appears when the
       *    input file runs out at this prompt
-               MOVE "1. Create/Edit My Profile" TO LOG-MSG
+               OPEN INPUT USER-PROFILE-FILE
+               IF PROFILE-FILE-STATUS = "35"
+                   MOVE "1. Create My Profile" TO LOG-MSG
+               ELSE
+                   MOVE "1. Edit My Profile" TO LOG-MSG
+                   MOVE 'Y' TO HAS-FILE
+               END-IF
+               CLOSE USER-PROFILE-FILE
                PERFORM WRITE-OUTPUT
                MOVE "2. View My Profile" TO LOG-MSG
                PERFORM WRITE-OUTPUT
@@ -469,47 +502,56 @@
                    PERFORM WRITE-OUTPUT
                NOT AT END
                    STRING "Enter your choice: " DELIMITED BY SIZE
-                           USER-INPUT DELIMITED BY SPACE
-                       INTO STRING-MESSAGE
+                           USER-INPUT DELIMITED BY SPACE 
+                           INTO STRING-MESSAGE
                    END-STRING
                    MOVE STRING-MESSAGE TO LOG-MSG
                    PERFORM WRITE-OUTPUT
                    INITIALIZE STRING-MESSAGE
-                   EVALUATE USER-INPUT
-                       WHEN "1"
-                           PERFORM CREATE-EDIT-PROFILE
-                       WHEN "2"
-                           PERFORM VIEW-PROFILE
-                       WHEN "3"
-                           MOVE "Job search is under construction."
-                           TO LOG-MSG
-                           PERFORM WRITE-OUTPUT
-                       WHEN "4"
-                           MOVE "Find someone you know is under construc
-      -                    "tion." TO LOG-MSG
-                           PERFORM WRITE-OUTPUT
-                       WHEN "5"
-                           PERFORM SKILL-MENU
-                       WHEN OTHER
-                           MOVE "Unknown Option" TO LOG-MSG
-                           PERFORM WRITE-OUTPUT
-                           CLOSE INPUT-FILE
-                           CLOSE OUTPUT-FILE
-                           STOP RUN
-                   END-EVALUATE
+                   PERFORM MENU-CHOICE
                END-READ
            END-PERFORM.
       *    Execution reaches here when the input file runs out
+           MOVE "Logging out.." TO LOG-MSG
+           PERFORM WRITE-OUTPUT.
            CLOSE INPUT-FILE.
            CLOSE OUTPUT-FILE.
            STOP RUN.
-
+           
+       MENU-CHOICE.
+           EVALUATE USER-INPUT
+               WHEN "1"
+                   IF HAS-FILE = 'Y'
+                       PERFORM CREATE-EDIT-PROFILE
+                   ELSE
+                       OPEN OUTPUT USER-PROFILE-FILE
+                       CLOSE USER-PROFILE-FILE
+                       PERFORM CREATE-EDIT-PROFILE
+                   END-IF
+               WHEN "2"
+                   PERFORM VIEW-PROFILE
+               WHEN "3"
+                   MOVE "Job search is under construction." TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               WHEN "4"
+                   MOVE "Find someone you know is under construction." 
+                   TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               WHEN "5"
+                   PERFORM SKILL-MENU
+               WHEN OTHER
+                   MOVE "Unknown Option" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   CLOSE INPUT-FILE
+                   CLOSE OUTPUT-FILE
+                   STOP RUN
+           END-EVALUATE.
        CREATE-EDIT-PROFILE.
       *    Option 1 placeholder, only shows the header for now
       *    Full create/edit profile flow will be added later in Epic 2
            MOVE "--- Create/Edit Profile ---" TO LOG-MSG
            PERFORM WRITE-OUTPUT.
-
+           
        VIEW-PROFILE.
       *    Option 2 placeholder, only shows the header for now
       *    Profile display will be added later in Epic 2
@@ -550,38 +592,39 @@
                MOVE STRING-MESSAGE TO LOG-MSG
                PERFORM WRITE-OUTPUT
                INITIALIZE STRING-MESSAGE
-               EVALUATE USER-INPUT
-                   WHEN "Communication"
-                       MOVE "Communication skill is under construction."
-                       TO LOG-MSG
-                       PERFORM WRITE-OUTPUT
-                   WHEN "Coding"
-                       MOVE "Coding skill is under construction."
-                       TO LOG-MSG
-                       PERFORM WRITE-OUTPUT
-                   WHEN "Teamwork"
-                       MOVE "Teamwork skill is under construction."
-                       TO LOG-MSG
-                       PERFORM WRITE-OUTPUT
-                   WHEN "Leadership"
-                       MOVE "Leadership skill is under construction."
-                       TO LOG-MSG
-                       PERFORM WRITE-OUTPUT
-                   WHEN "Critical Thinking"
-                       MOVE "Critical Thinking skill is under constructi
-      -                 "on." TO LOG-MSG
-                       PERFORM WRITE-OUTPUT
-                   WHEN NOT "Go Back"
-                       MOVE "Unknown Option" TO LOG-MSG
-                       PERFORM WRITE-OUTPUT
-                       CLOSE INPUT-FILE
-                       CLOSE OUTPUT-FILE
-                       STOP RUN
-               END-EVALUATE
+               PERFORM SKILL-CHOICE
            END-PERFORM.
       
+       SKILL-CHOICE.
+           EVALUATE USER-INPUT
+               WHEN "Communication"
+                   MOVE "Communication skill is under construction."
+                   TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               WHEN "Coding"
+                   MOVE "Coding skill is under construction." TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               WHEN "Teamwork"
+                   MOVE "Teamwork skill is under construction." 
+                   TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               WHEN "Leadership"
+                   MOVE "Leadership skill is under construction."
+                   TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               WHEN "Critical Thinking"
+                   MOVE "Critical Thinking skill is under construction." 
+                   TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               WHEN NOT "Go Back"
+                   MOVE "Unknown Option" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   CLOSE INPUT-FILE
+                   CLOSE OUTPUT-FILE
+                   STOP RUN
+           END-EVALUATE.
                 
-      *    KAN-41/42: Dual output - display to console AND write to file
+      *    Dual output - display to console AND write to file
       *    KAN-101: The file WRITE drops trailing spaces, so DISPLAY
       *    trims them too so screen and file lines are byte-identical
        WRITE-OUTPUT.
