@@ -23,7 +23,7 @@
            ASSIGN TO "InCollege-Accounts.txt"
            ORGANIZATION IS LINE SEQUENTIAL.
 
-           SELECT USER-PROFILE-FILE
+           SELECT PROFILE-FILE
            ASSIGN TO USER-DATA
            ORGANIZATION IS LINE SEQUENTIAL
            FILE STATUS IS PROFILE-FILE-STATUS.
@@ -42,7 +42,7 @@
                05 ACCOUNT-USER PIC X(80).
                05 ACCOUNT-SEPARATOR PIC X(1).
                05 ACCOUNT-PASS PIC X(12).
-       FD USER-PROFILE-FILE.
+       FD PROFILE-FILE.
            01 PROFILE-RECORD.
                05 PROFILE-INPUT PIC X(200).
           
@@ -476,14 +476,14 @@
            PERFORM UNTIL MENU-EOF = 'Y'
       *    Menu is shown before the read so it still appears when the
       *    input file runs out at this prompt
-               OPEN INPUT USER-PROFILE-FILE
+               OPEN INPUT PROFILE-FILE
                IF PROFILE-FILE-STATUS = "35"
                    MOVE "1. Create My Profile" TO LOG-MSG
                ELSE
                    MOVE "1. Edit My Profile" TO LOG-MSG
                    MOVE 'Y' TO HAS-FILE
                END-IF
-               CLOSE USER-PROFILE-FILE
+               CLOSE PROFILE-FILE
                PERFORM WRITE-OUTPUT
                MOVE "2. View My Profile" TO LOG-MSG
                PERFORM WRITE-OUTPUT
@@ -524,8 +524,8 @@
                    IF HAS-FILE = 'Y'
                        PERFORM CREATE-EDIT-PROFILE
                    ELSE
-                       OPEN OUTPUT USER-PROFILE-FILE
-                       CLOSE USER-PROFILE-FILE
+                       OPEN OUTPUT PROFILE-FILE
+                       CLOSE PROFILE-FILE
                        PERFORM CREATE-EDIT-PROFILE
                    END-IF
                WHEN "2"
@@ -549,15 +549,20 @@
        CREATE-EDIT-PROFILE.
       *    Option 1 placeholder, only shows the header for now
       *    Full create/edit profile flow will be added later in Epic 2
-           MOVE "--- Create/Edit Profile ---" TO LOG-MSG
+           IF HAS-FILE = 'N'
+               MOVE "--- Create Profile ---" TO LOG-MSG
+           ELSE
+               MOVE "--- Edit Profile ---" TO LOG-MSG
+           END-IF.
            PERFORM WRITE-OUTPUT.
+           OPEN OUTPUT PROFILE-FILE.
            
        VIEW-PROFILE.
       *    Option 2 placeholder, only shows the header for now
       *    Profile display will be added later in Epic 2
+           OPEN INPUT PROFILE-FILE
            MOVE "--- Your Profile ---" TO LOG-MSG
            PERFORM WRITE-OUTPUT.
-       
        SKILL-MENU.
       *    Shows user list of skills to learn, each option other than
       *    Go back will display message, menu will keep appearing until
