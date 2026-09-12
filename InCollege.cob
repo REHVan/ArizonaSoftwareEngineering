@@ -556,11 +556,29 @@
            END-IF.
            PERFORM WRITE-OUTPUT.
            OPEN OUTPUT PROFILE-FILE.
-           
        VIEW-PROFILE.
       *    Option 2 placeholder, only shows the header for now
       *    Profile display will be added later in Epic 2
+
+      *    First checks if user tries to open a folder that does
+      *    not exist
            OPEN INPUT PROFILE-FILE
+           IF PROFILE-FILE-STATUS = "35"
+               MOVE "Your profile does not exist. Please create profile"
+               TO LOG-MSG
+               CLOSE PROFILE-FILE
+               PERFORM WRITE-OUTPUT
+               EXIT PARAGRAPH
+           END-IF.
+      *    Next check is if the file does exist, but is empty
+           READ PROFILE-FILE
+               AT END
+                   MOVE "Your profile is empty. Please complete profile"
+                   TO LOG-MSG
+                   CLOSE PROFILE-FILE
+                   PERFORM WRITE-OUTPUT
+                   EXIT PARAGRAPH
+           END-READ.
            MOVE "--- Your Profile ---" TO LOG-MSG
            PERFORM WRITE-OUTPUT.
        SKILL-MENU.
