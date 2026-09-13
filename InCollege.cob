@@ -75,6 +75,16 @@ IDENTIFICATION DIVISION.
            01 PROFILE-MAJOR PIC X(80).
            01 GRADUATION-YEAR PIC 9(4).
            01 ABOUT-ME PIC X(200).
+      *    Up to three work experience entries per profile
+           01 EXPERIENCE-TABLE.
+               05 EXPERIENCE-ENTRY OCCURS 3 TIMES.
+                   10 EXP-TITLE PIC X(80).
+                   10 EXP-COMPANY PIC X(80).
+                   10 EXP-DATES PIC X(80).
+                   10 EXP-DESC PIC X(100).
+           01 EXP-COUNT PIC 9 VALUE 0.
+           01 EXP-INDEX PIC 9 VALUE 0.
+           01 EXP-DONE PIC X(1) VALUE 'N'.
       *    Up to three education entries per profile
            01 EDUCATION-TABLE.
                05 EDUCATION-ENTRY OCCURS 3 TIMES.
@@ -582,9 +592,11 @@ IDENTIFICATION DIVISION.
            PERFORM PROFILE-UNIVERSITY-MAJOR
            PERFORM PROFILE-GRADUATION
            PERFORM PROFILE-ABOUT-ME
-      *    Experience entries belong between About Me and education
+           PERFORM PROFILE-EXPERIENCE
            PERFORM PROFILE-EDUCATION
            CLOSE PROFILE-FILE.
+           MOVE "Profile saved successfully!" TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
 
        GET-INPUT.
            READ INPUT-FILE
@@ -736,6 +748,112 @@ IDENTIFICATION DIVISION.
                PERFORM WRITE-PROFILE
            END-IF.
 
+       PROFILE-EXPERIENCE.
+      *    Optional, up to three entries. DONE ends the list early and
+      *    the loop also stops on its own once three are entered
+           MOVE 0 TO EXP-COUNT.
+           MOVE 'N' TO EXP-DONE.
+           PERFORM UNTIL EXP-DONE = 'Y' OR EXP-COUNT = 3
+               MOVE "Add Experience (optional, max 3 entries. Enter 'DO
+      -        "NE' to finish):" TO PROFILE-PROMPT
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF FUNCTION TRIM(USER-INPUT) = "DONE"
+                   MOVE 'Y' TO EXP-DONE
+               ELSE
+                   ADD 1 TO EXP-COUNT
+                   PERFORM EXPERIENCE-ENTRY-INPUT
+               END-IF
+           END-PERFORM.
+           IF EXP-COUNT > 0
+               PERFORM WRITE-EXPERIENCE
+           END-IF.
+
+       EXPERIENCE-ENTRY-INPUT.
+      *    Title, company and dates are part of the entry. The
+      *    description is optional and a blank line leaves it empty
+           INITIALIZE PROFILE-PROMPT.
+           STRING "Experience #" DELIMITED BY SIZE
+                   EXP-COUNT DELIMITED BY SIZE
+                   " - Title:" DELIMITED BY SIZE
+             INTO PROFILE-PROMPT
+           END-STRING.
+           PERFORM GET-INPUT.
+           PERFORM WRITE-OUTPUT.
+           MOVE USER-INPUT TO EXP-TITLE(EXP-COUNT).
+
+           INITIALIZE PROFILE-PROMPT.
+           STRING "Experience #" DELIMITED BY SIZE
+                   EXP-COUNT DELIMITED BY SIZE
+                   " - Company/Organization:" DELIMITED BY SIZE
+             INTO PROFILE-PROMPT
+           END-STRING.
+           PERFORM GET-INPUT.
+           PERFORM WRITE-OUTPUT.
+           MOVE USER-INPUT TO EXP-COMPANY(EXP-COUNT).
+
+           INITIALIZE PROFILE-PROMPT.
+           STRING "Experience #" DELIMITED BY SIZE
+                   EXP-COUNT DELIMITED BY SIZE
+                   " - Dates (e.g., Summer 2024):" DELIMITED BY SIZE
+             INTO PROFILE-PROMPT
+           END-STRING.
+           PERFORM GET-INPUT.
+           PERFORM WRITE-OUTPUT.
+           MOVE USER-INPUT TO EXP-DATES(EXP-COUNT).
+
+           INITIALIZE PROFILE-PROMPT.
+           STRING "Experience #" DELIMITED BY SIZE
+                   EXP-COUNT DELIMITED BY SIZE
+                   " - Description (optional, max 100 chars, blank to "
+                   DELIMITED BY SIZE
+                   "skip):" DELIMITED BY SIZE
+             INTO PROFILE-PROMPT
+           END-STRING.
+           PERFORM GET-INPUT.
+           PERFORM WRITE-OUTPUT.
+           MOVE USER-INPUT TO EXP-DESC(EXP-COUNT).
+
+       WRITE-EXPERIENCE.
+      *    Writes the header once, then one indented block per entry.
+      *    A blank description is left out of the saved profile
+           INITIALIZE PROFILE-LOG.
+           MOVE "Experience:" TO PROFILE-LOG.
+           PERFORM WRITE-PROFILE.
+           PERFORM VARYING EXP-INDEX FROM 1 BY 1
+               UNTIL EXP-INDEX > EXP-COUNT
+               INITIALIZE PROFILE-LOG
+               STRING " Title: " DELIMITED BY SIZE
+                       FUNCTION TRIM(EXP-TITLE(EXP-INDEX))
+                       DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+               INITIALIZE PROFILE-LOG
+               STRING " Company: " DELIMITED BY SIZE
+                       FUNCTION TRIM(EXP-COMPANY(EXP-INDEX))
+                       DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+               INITIALIZE PROFILE-LOG
+               STRING " Dates: " DELIMITED BY SIZE
+                       FUNCTION TRIM(EXP-DATES(EXP-INDEX))
+                       DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+               IF EXP-DESC(EXP-INDEX) NOT = SPACES
+                   INITIALIZE PROFILE-LOG
+                   STRING " Description: " DELIMITED BY SIZE
+                           FUNCTION TRIM(EXP-DESC(EXP-INDEX))
+                           DELIMITED BY SIZE
+                     INTO PROFILE-LOG
+                   END-STRING
+                   PERFORM WRITE-PROFILE
+               END-IF
+           END-PERFORM.
+
        PROFILE-EDUCATION.
       *    Optional, up to three entries. DONE ends the list early and
       *    the loop also stops on its own once three are entered
@@ -858,6 +976,8 @@ IDENTIFICATION DIVISION.
                        PERFORM WRITE-OUTPUT
                 END-READ
            END-PERFORM.
+           MOVE "--------------------" TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
        SKILL-MENU.
       *    Shows user list of skills to learn, each option other than
       *    Go back will display message, menu will keep appearing until
