@@ -70,6 +70,7 @@
       *    File that hold user profile
            01 PROFILE-FIRSTNAME PIC X(80).
            01 PROFILE-LASTNAME PIC X(80).
+           01 GRADUATION-YEAR PIC 9(4).
            01 USERNAME-STATUS PIC X(1) VALUE 'N'.
                88 USERNAME-UNIQUE-TRUE VALUE 'Y'.
                88 USERNAME-UNIQUE-FALSE VALUE 'N'.
@@ -562,9 +563,10 @@
            END-IF.
            PERFORM WRITE-OUTPUT.
            OPEN OUTPUT PROFILE-FILE.
-       
+      *    TODO Implement data
       *    Function to get input and keeps it all on one line
-           PERFORM GET-INPUT.
+           PERFORM PROFILE-GRADUATION
+           PERFORM WRITE-PROFILE
            CLOSE PROFILE-FILE.
 
        GET-INPUT.
@@ -584,7 +586,41 @@
                    END-STRING
                    MOVE STRING-MESSAGE TO LOG-MSG
                END-READ.
-                   
+      
+       PROFILE-GRADUATION.
+           PERFORM UNTIL GRADUATION-YEAR > 2025 
+                         AND GRADUATION-YEAR < 2034
+               
+               MOVE "Enter Graduation Year (YYYY):" TO PROFILE-PROMPT
+               PERFORM GET-INPUT
+               IF FUNCTION TRIM(USER-INPUT) IS NUMERIC
+                   MOVE USER-INPUT TO GRADUATION-YEAR
+               ELSE
+                   MOVE ZEROS TO GRADUATION-YEAR
+               END-IF
+               PERFORM WRITE-OUTPUT
+               EVALUATE TRUE
+                WHEN GRADUATION-YEAR = 0000
+                   MOVE "Graduation Year must be numeric" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                WHEN GRADUATION-YEAR < 2026 OR GRADUATION-YEAR > 2033
+                   MOVE "Invalid Year. Please enter a year in between 20
+      -            "26 and 2033." TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                WHEN GRADUATION-YEAR IS NOT = 2026
+                     AND GRADUATION-YEAR IS NOT = 2033
+                   MOVE "Graduation year is required" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               END-EVALUATE
+           END-PERFORM.
+
+      *    Reaching here means graduation year is valid
+           
+           STRING "Graduation Year: " DELIMITED BY SIZE
+                  USER-INPUT DELIMITED BY SPACE
+              INTO PROFILE-LOG
+           END-STRING.
+           
        VIEW-PROFILE.
       *    Option 2 placeholder, only shows the header for now
       *    Profile display will be added later in Epic 2
@@ -610,6 +646,7 @@
                    EXIT PARAGRAPH
            END-READ.
            CLOSE PROFILE-FILE
+
            MOVE "--- Your Profile ---" TO LOG-MSG
            PERFORM WRITE-OUTPUT.
            OPEN INPUT PROFILE-FILE.
