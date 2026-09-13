@@ -1,4 +1,4 @@
-IDENTIFICATION DIVISION.
+       IDENTIFICATION DIVISION.
        PROGRAM-ID. InCollege.
        AUTHOR. Rafael Hernandez Vantuyl, Andy Ho, Steven Huynh.
        AUTHOR. Joanna Johnson, Lynberg Jean.
@@ -754,52 +754,82 @@ IDENTIFICATION DIVISION.
            MOVE 0 TO EXP-COUNT.
            MOVE 'N' TO EXP-DONE.
            PERFORM UNTIL EXP-DONE = 'Y' OR EXP-COUNT = 3
-               MOVE "Add Experience (optional, max 3 entries. Enter 'DO
-      -        "NE' to finish):" TO PROFILE-PROMPT
+               MOVE "Add Experience? (optional, max 3 entries, Enter 'DO
+      -         "NE' to finish. ): " TO PROFILE-PROMPT
                PERFORM GET-INPUT
                PERFORM WRITE-OUTPUT
-               IF FUNCTION TRIM(USER-INPUT) = "DONE"
+               EVALUATE TRUE
+                WHEN FUNCTION TRIM(USER-INPUT) = "DONE"
                    MOVE 'Y' TO EXP-DONE
-               ELSE
+                WHEN OTHER
                    ADD 1 TO EXP-COUNT
                    PERFORM EXPERIENCE-ENTRY-INPUT
-               END-IF
+               END-EVALUATE
            END-PERFORM.
            IF EXP-COUNT > 0
                PERFORM WRITE-EXPERIENCE
            END-IF.
+           IF EXP-COUNT = 3
+               MOVE "Cannot enter anymore experiences." TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+           END-IF.
 
        EXPERIENCE-ENTRY-INPUT.
-      *    Title, company and dates are part of the entry. The
+      *    Title, company and dates are required parts of the entry. The
       *    description is optional and a blank line leaves it empty
            INITIALIZE PROFILE-PROMPT.
-           STRING "Experience #" DELIMITED BY SIZE
-                   EXP-COUNT DELIMITED BY SIZE
-                   " - Title:" DELIMITED BY SIZE
-             INTO PROFILE-PROMPT
-           END-STRING.
-           PERFORM GET-INPUT.
-           PERFORM WRITE-OUTPUT.
+           MOVE SPACES TO USER-INPUT.
+           PERFORM UNTIL USER-INPUT NOT = SPACES
+               STRING "Experience #" DELIMITED BY SIZE
+                       EXP-COUNT DELIMITED BY SIZE
+                       " - Title:" DELIMITED BY SIZE
+               INTO PROFILE-PROMPT
+               END-STRING
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Title field is required." TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               END-IF
+           END-PERFORM.
+           
            MOVE USER-INPUT TO EXP-TITLE(EXP-COUNT).
 
            INITIALIZE PROFILE-PROMPT.
-           STRING "Experience #" DELIMITED BY SIZE
-                   EXP-COUNT DELIMITED BY SIZE
-                   " - Company/Organization:" DELIMITED BY SIZE
-             INTO PROFILE-PROMPT
-           END-STRING.
-           PERFORM GET-INPUT.
-           PERFORM WRITE-OUTPUT.
+           MOVE SPACES TO USER-INPUT.
+           PERFORM UNTIL USER-INPUT NOT = SPACES
+               STRING "Experience #" DELIMITED BY SIZE
+                       EXP-COUNT DELIMITED BY SIZE
+                       " - Company/Organization:" DELIMITED BY SIZE
+               INTO PROFILE-PROMPT
+               END-STRING
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Company/Organization field is required." 
+                   TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               END-IF
+           END-PERFORM.
+           
            MOVE USER-INPUT TO EXP-COMPANY(EXP-COUNT).
 
            INITIALIZE PROFILE-PROMPT.
-           STRING "Experience #" DELIMITED BY SIZE
-                   EXP-COUNT DELIMITED BY SIZE
+           MOVE SPACES TO USER-INPUT.
+           PERFORM UNTIL USER-INPUT NOT = SPACES
+               STRING "Experience #" DELIMITED BY SIZE
+                       EXP-COUNT DELIMITED BY SIZE
                    " - Dates (e.g., Summer 2024):" DELIMITED BY SIZE
-             INTO PROFILE-PROMPT
-           END-STRING.
-           PERFORM GET-INPUT.
-           PERFORM WRITE-OUTPUT.
+                  INTO PROFILE-PROMPT
+               END-STRING
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Date field is required." TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               END-IF
+           END-PERFORM.
+           
            MOVE USER-INPUT TO EXP-DATES(EXP-COUNT).
 
            INITIALIZE PROFILE-PROMPT.
@@ -860,8 +890,8 @@ IDENTIFICATION DIVISION.
            MOVE 0 TO EDU-COUNT.
            MOVE 'N' TO EDU-DONE.
            PERFORM UNTIL EDU-DONE = 'Y' OR EDU-COUNT = 3
-               MOVE "Add Education (optional, max 3 entries. Enter 'DON
-      -        "E' to finish):" TO PROFILE-PROMPT
+               MOVE "Add Education (optional, max 3 entries. Enter 'DONE
+      -        "' to finish):" TO PROFILE-PROMPT
                PERFORM GET-INPUT
                PERFORM WRITE-OUTPUT
                IF FUNCTION TRIM(USER-INPUT) = "DONE"
@@ -874,38 +904,68 @@ IDENTIFICATION DIVISION.
            IF EDU-COUNT > 0
                PERFORM WRITE-EDUCATION
            END-IF.
+           IF EDU-COUNT = 3
+               MOVE "Education limit reached. Please edit profile if you
+      -         "wish to change any." TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+           END-IF.
 
        EDUCATION-ENTRY-INPUT.
       *    Collects one entry, numbered by how many are stored so far
+           MOVE SPACES TO USER-INPUT.
            INITIALIZE PROFILE-PROMPT.
-           STRING "Education #" DELIMITED BY SIZE
-                   EDU-COUNT DELIMITED BY SIZE
-                   " - Degree:" DELIMITED BY SIZE
-             INTO PROFILE-PROMPT
-           END-STRING.
-           PERFORM GET-INPUT.
-           PERFORM WRITE-OUTPUT.
+           PERFORM UNTIL USER-INPUT NOT = SPACES
+               STRING "Education #" DELIMITED BY SIZE
+                       EDU-COUNT DELIMITED BY SIZE
+                       " - Degree:" DELIMITED BY SIZE
+                INTO PROFILE-PROMPT
+               END-STRING
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Degree Field must not be blank." TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               END-IF
+           END-PERFORM.
            MOVE USER-INPUT TO EDU-DEGREE(EDU-COUNT).
-
+           
+           MOVE SPACES TO USER-INPUT.
            INITIALIZE PROFILE-PROMPT.
-           STRING "Education #" DELIMITED BY SIZE
-                   EDU-COUNT DELIMITED BY SIZE
-                   " - University/College:" DELIMITED BY SIZE
-             INTO PROFILE-PROMPT
-           END-STRING.
-           PERFORM GET-INPUT.
-           PERFORM WRITE-OUTPUT.
+           PERFORM UNTIL USER-INPUT NOT = SPACES 
+               STRING "Education #" DELIMITED BY SIZE
+                       EDU-COUNT DELIMITED BY SIZE
+                       " - University/College:" DELIMITED BY SIZE
+                 INTO PROFILE-PROMPT
+               END-STRING
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Univeristy/College Field must not be blank." 
+                   TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               END-IF
+           END-PERFORM.
+
            MOVE USER-INPUT TO EDU-SCHOOL(EDU-COUNT).
-
+           
+           MOVE SPACES TO USER-INPUT
            INITIALIZE PROFILE-PROMPT.
-           STRING "Education #" DELIMITED BY SIZE
-                   EDU-COUNT DELIMITED BY SIZE
-                   " - Years Attended (e.g., 2023-2025):"
-                   DELIMITED BY SIZE
-             INTO PROFILE-PROMPT
-           END-STRING.
-           PERFORM GET-INPUT.
-           PERFORM WRITE-OUTPUT.
+           PERFORM UNTIL USER-INPUT NOT = SPACES
+               STRING "Education #" DELIMITED BY SIZE
+                       EDU-COUNT DELIMITED BY SIZE
+                       " - Years Attended (e.g., 2023-2025):"
+                       DELIMITED BY SIZE
+                 INTO PROFILE-PROMPT
+               END-STRING
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Years Attended field must not be blank." 
+                   TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               END-IF
+           END-PERFORM.
+
            MOVE USER-INPUT TO EDU-YEARS(EDU-COUNT).
 
        WRITE-EDUCATION.
