@@ -1,4 +1,4 @@
-       IDENTIFICATION DIVISION.
+IDENTIFICATION DIVISION.
        PROGRAM-ID. InCollege.
        AUTHOR. Rafael Hernandez Vantuyl, Andy Ho, Steven Huynh.
        AUTHOR. Joanna Johnson, Lynberg Jean.
@@ -12,7 +12,7 @@
            ASSIGN TO "InCollege-Input.txt"
            ORGANIZATION IS LINE SEQUENTIAL
            FILE STATUS IS INPUT-FILE-STATUS.
-      *    Output log file (KAN-41/42: dual output)
+      *    Output log file for dual output
            SELECT OUTPUT-FILE
            ASSIGN TO "InCollege-Output.txt"
            ORGANIZATION IS LINE SEQUENTIAL
@@ -70,6 +70,9 @@
       *    File that hold user profile
            01 PROFILE-FIRSTNAME PIC X(80).
            01 PROFILE-LASTNAME PIC X(80).
+      *    Required university and major fields
+           01 PROFILE-UNIVERSITY PIC X(80).
+           01 PROFILE-MAJOR PIC X(80).
            01 GRADUATION-YEAR PIC 9(4).
            01 USERNAME-STATUS PIC X(1) VALUE 'N'.
                88 USERNAME-UNIQUE-TRUE VALUE 'Y'.
@@ -554,8 +557,8 @@
                    STOP RUN
            END-EVALUATE.
        CREATE-EDIT-PROFILE.
-      *    Option 1 placeholder, only shows the header for now
-      *    Full create/edit profile flow will be added later in Epic 2
+      *    Create and edit ask the same questions, only the header
+      *    changes, so both paths run the same prompt paragraphs
            IF HAS-FILE = 'N'
                MOVE "--- Create Profile ---" TO LOG-MSG
            ELSE
@@ -563,10 +566,11 @@
            END-IF.
            PERFORM WRITE-OUTPUT.
            OPEN OUTPUT PROFILE-FILE.
-      *    TODO Implement data
-      *    Function to get input and keeps it all on one line
+      *    Each paragraph prompts, validates, then writes its own
+      *    line to the profile file in the order the sample shows
+           PERFORM PROFILE-NAME
+           PERFORM PROFILE-UNIVERSITY-MAJOR
            PERFORM PROFILE-GRADUATION
-           PERFORM WRITE-PROFILE
            CLOSE PROFILE-FILE.
 
        GET-INPUT.
@@ -586,8 +590,92 @@
                    END-STRING
                    MOVE STRING-MESSAGE TO LOG-MSG
                END-READ.
+
+       PROFILE-NAME.
+      *    First and last name are both required, so keep
+      *    prompting until something other than spaces is entered
+           MOVE SPACES TO PROFILE-FIRSTNAME.
+           PERFORM UNTIL PROFILE-FIRSTNAME NOT = SPACES
+               MOVE "Enter First Name:" TO PROFILE-PROMPT
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "First Name is required" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               ELSE
+                   MOVE USER-INPUT TO PROFILE-FIRSTNAME
+               END-IF
+           END-PERFORM.
+
+           MOVE SPACES TO PROFILE-LASTNAME.
+           PERFORM UNTIL PROFILE-LASTNAME NOT = SPACES
+               MOVE "Enter Last Name:" TO PROFILE-PROMPT
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Last Name is required" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               ELSE
+                   MOVE USER-INPUT TO PROFILE-LASTNAME
+               END-IF
+           END-PERFORM.
+
+      *    The sample profile shows one Name line, not two, so the
+      *    two fields are joined before being written
+           INITIALIZE PROFILE-LOG.
+           STRING "Name: " DELIMITED BY SIZE
+                   FUNCTION TRIM(PROFILE-FIRSTNAME) DELIMITED BY SIZE
+                   " " DELIMITED BY SIZE
+                   FUNCTION TRIM(PROFILE-LASTNAME) DELIMITED BY SIZE
+             INTO PROFILE-LOG
+           END-STRING.
+           PERFORM WRITE-PROFILE.
+
+       PROFILE-UNIVERSITY-MAJOR.
+      *    University and major are both required
+           MOVE SPACES TO PROFILE-UNIVERSITY.
+           PERFORM UNTIL PROFILE-UNIVERSITY NOT = SPACES
+               MOVE "Enter University/College Attended:"
+                 TO PROFILE-PROMPT
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "University/College is required" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               ELSE
+                   MOVE USER-INPUT TO PROFILE-UNIVERSITY
+               END-IF
+           END-PERFORM.
+
+           INITIALIZE PROFILE-LOG.
+           STRING "University: " DELIMITED BY SIZE
+                   FUNCTION TRIM(PROFILE-UNIVERSITY) DELIMITED BY SIZE
+             INTO PROFILE-LOG
+           END-STRING.
+           PERFORM WRITE-PROFILE.
+
+           MOVE SPACES TO PROFILE-MAJOR.
+           PERFORM UNTIL PROFILE-MAJOR NOT = SPACES
+               MOVE "Enter Major:" TO PROFILE-PROMPT
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Major is required" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               ELSE
+                   MOVE USER-INPUT TO PROFILE-MAJOR
+               END-IF
+           END-PERFORM.
+
+           INITIALIZE PROFILE-LOG.
+           STRING "Major: " DELIMITED BY SIZE
+                   FUNCTION TRIM(PROFILE-MAJOR) DELIMITED BY SIZE
+             INTO PROFILE-LOG
+           END-STRING.
+           PERFORM WRITE-PROFILE.
       
        PROFILE-GRADUATION.
+           MOVE ZEROS TO GRADUATION-YEAR.
            PERFORM UNTIL GRADUATION-YEAR > 2025 
                          AND GRADUATION-YEAR < 2034
                
@@ -607,19 +695,16 @@
                    MOVE "Invalid Year. Please enter a year in between 20
       -            "26 and 2033." TO LOG-MSG
                    PERFORM WRITE-OUTPUT
-                WHEN GRADUATION-YEAR IS NOT = 2026
-                     AND GRADUATION-YEAR IS NOT = 2033
-                   MOVE "Graduation year is required" TO LOG-MSG
-                   PERFORM WRITE-OUTPUT
                END-EVALUATE
            END-PERFORM.
 
       *    Reaching here means graduation year is valid
-           
+           INITIALIZE PROFILE-LOG.
            STRING "Graduation Year: " DELIMITED BY SIZE
-                  USER-INPUT DELIMITED BY SPACE
+                  GRADUATION-YEAR DELIMITED BY SIZE
               INTO PROFILE-LOG
            END-STRING.
+           PERFORM WRITE-PROFILE.
            
        VIEW-PROFILE.
       *    Option 2 placeholder, only shows the header for now
@@ -715,7 +800,7 @@
                    TO LOG-MSG
                    PERFORM WRITE-OUTPUT
                WHEN "Critical Thinking"
-                   MOVE "Critical Thinking skill is under construction." 
+                   MOVE "Critical Thinking skill is under construction."
                    TO LOG-MSG
                    PERFORM WRITE-OUTPUT
                WHEN NOT "Go Back"
@@ -727,7 +812,7 @@
            END-EVALUATE.
                 
       *    Dual output - display to console AND write to file
-      *    KAN-101: The file WRITE drops trailing spaces, so DISPLAY
+      *    The file WRITE drops trailing spaces, so DISPLAY
       *    trims them too so screen and file lines are byte-identical
        WRITE-OUTPUT.
            MOVE FUNCTION TRIM(LOG-MSG TRAILING) TO OUTPUT-RECORD
@@ -737,3 +822,4 @@
        WRITE-PROFILE.
            MOVE FUNCTION TRIM(PROFILE-LOG) TO PROFILE-RECORD
            WRITE PROFILE-RECORD.
+           
