@@ -33,9 +33,9 @@ IDENTIFICATION DIVISION.
        FD INPUT-FILE.
       *    Input file 
            01 INPUT-RECORD.
-               05 USER-INPUT PIC X(80).
+               05 USER-INPUT PIC X(200).
        FD OUTPUT-FILE.
-           01 OUTPUT-RECORD PIC X(80).
+           01 OUTPUT-RECORD PIC X(300).
        
        FD ACCOUNTS-FILE.
            01 ACCOUNTS-RECORD.
@@ -43,7 +43,7 @@ IDENTIFICATION DIVISION.
                05 ACCOUNT-SEPARATOR PIC X(1).
                05 ACCOUNT-PASS PIC X(12).
        FD PROFILE-FILE.
-           01 PROFILE-RECORD PIC X(200).
+           01 PROFILE-RECORD PIC X(300).
           
        WORKING-STORAGE SECTION.
            01 ACCOUNTS-EOF     PIC X(1) VALUE 'N'.
@@ -63,7 +63,7 @@ IDENTIFICATION DIVISION.
                88 LOGIN-VALID-TRUE VALUE 'Y'.
                88 LOGIN-VALID-FALSE VALUE 'N'.
       *    Username validation flags
-           01 PROFILE-PROMPT PIC X(80).
+           01 PROFILE-PROMPT PIC X(100).
            
            01 PROFILE-PREFIX PIC X(80).
            01 PROFILE-STRING PIC X(80).
@@ -74,6 +74,16 @@ IDENTIFICATION DIVISION.
            01 PROFILE-UNIVERSITY PIC X(80).
            01 PROFILE-MAJOR PIC X(80).
            01 GRADUATION-YEAR PIC 9(4).
+           01 ABOUT-ME PIC X(200).
+      *    Up to three education entries per profile
+           01 EDUCATION-TABLE.
+               05 EDUCATION-ENTRY OCCURS 3 TIMES.
+                   10 EDU-DEGREE PIC X(80).
+                   10 EDU-SCHOOL PIC X(80).
+                   10 EDU-YEARS PIC X(80).
+           01 EDU-COUNT PIC 9 VALUE 0.
+           01 EDU-INDEX PIC 9 VALUE 0.
+           01 EDU-DONE PIC X(1) VALUE 'N'.
            01 USERNAME-STATUS PIC X(1) VALUE 'N'.
                88 USERNAME-UNIQUE-TRUE VALUE 'Y'.
                88 USERNAME-UNIQUE-FALSE VALUE 'N'.
@@ -89,9 +99,9 @@ IDENTIFICATION DIVISION.
            01 NEW-USERNAME PIC X(80).
            01 USERNAME-CHARACTER-INDEX PIC 99 VALUE 0.
            01 USERNAME-LENGTH PIC 99.
-           01 LOG-MSG PIC X(80) VALUE SPACES.
-           01 PROFILE-LOG PIC X(200) VALUE SPACES.
-           01 STRING-MESSAGE PIC X(80) VALUE SPACES.
+           01 LOG-MSG PIC X(300) VALUE SPACES.
+           01 PROFILE-LOG PIC X(300) VALUE SPACES.
+           01 STRING-MESSAGE PIC X(300) VALUE SPACES.
            01 USER-NAME PIC X(80).
            01 NUM-ACCOUNTS PIC 9(1).
 
@@ -356,7 +366,7 @@ IDENTIFICATION DIVISION.
            CLOSE ACCOUNTS-FILE.
 
        PASSWORD-VALIDATION.
-      *    Validates password based on length, uppercase, digit, and special 
+      *    Validates password on length, uppercase, digit, special
 
       *    Reset all validation flags before checking a password
            MOVE 'N' TO IS-VALID.
@@ -369,7 +379,7 @@ IDENTIFICATION DIVISION.
       *    Index through at most 80 chars
            PERFORM VARYING PASSWORD-CHARACTER-INDEX FROM 1 BY 1
                UNTIL PASSWORD-CHARACTER-INDEX > 80
-      *    If the character is not a space, then it's part of the password
+      *    If the character is not a space, it is part of the password
                IF USER-INPUT(PASSWORD-CHARACTER-INDEX:1) NOT = SPACE
       *    Save final position to find password length, then exit loop
                    MOVE PASSWORD-CHARACTER-INDEX 
@@ -571,6 +581,9 @@ IDENTIFICATION DIVISION.
            PERFORM PROFILE-NAME
            PERFORM PROFILE-UNIVERSITY-MAJOR
            PERFORM PROFILE-GRADUATION
+           PERFORM PROFILE-ABOUT-ME
+      *    Experience entries belong between About Me and education
+           PERFORM PROFILE-EDUCATION
            CLOSE PROFILE-FILE.
 
        GET-INPUT.
@@ -706,9 +719,109 @@ IDENTIFICATION DIVISION.
            END-STRING.
            PERFORM WRITE-PROFILE.
            
+       PROFILE-ABOUT-ME.
+      *    Optional field, a blank line skips it and writes nothing
+           MOVE SPACES TO ABOUT-ME.
+           MOVE "Enter About Me (optional, max 200 chars, enter blank
+      -    "line to skip):" TO PROFILE-PROMPT.
+           PERFORM GET-INPUT.
+           PERFORM WRITE-OUTPUT.
+           IF USER-INPUT NOT = SPACES
+               MOVE USER-INPUT TO ABOUT-ME
+               INITIALIZE PROFILE-LOG
+               STRING "About Me: " DELIMITED BY SIZE
+                       FUNCTION TRIM(ABOUT-ME) DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+           END-IF.
+
+       PROFILE-EDUCATION.
+      *    Optional, up to three entries. DONE ends the list early and
+      *    the loop also stops on its own once three are entered
+           MOVE 0 TO EDU-COUNT.
+           MOVE 'N' TO EDU-DONE.
+           PERFORM UNTIL EDU-DONE = 'Y' OR EDU-COUNT = 3
+               MOVE "Add Education (optional, max 3 entries. Enter 'DON
+      -        "E' to finish):" TO PROFILE-PROMPT
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF FUNCTION TRIM(USER-INPUT) = "DONE"
+                   MOVE 'Y' TO EDU-DONE
+               ELSE
+                   ADD 1 TO EDU-COUNT
+                   PERFORM EDUCATION-ENTRY-INPUT
+               END-IF
+           END-PERFORM.
+           IF EDU-COUNT > 0
+               PERFORM WRITE-EDUCATION
+           END-IF.
+
+       EDUCATION-ENTRY-INPUT.
+      *    Collects one entry, numbered by how many are stored so far
+           INITIALIZE PROFILE-PROMPT.
+           STRING "Education #" DELIMITED BY SIZE
+                   EDU-COUNT DELIMITED BY SIZE
+                   " - Degree:" DELIMITED BY SIZE
+             INTO PROFILE-PROMPT
+           END-STRING.
+           PERFORM GET-INPUT.
+           PERFORM WRITE-OUTPUT.
+           MOVE USER-INPUT TO EDU-DEGREE(EDU-COUNT).
+
+           INITIALIZE PROFILE-PROMPT.
+           STRING "Education #" DELIMITED BY SIZE
+                   EDU-COUNT DELIMITED BY SIZE
+                   " - University/College:" DELIMITED BY SIZE
+             INTO PROFILE-PROMPT
+           END-STRING.
+           PERFORM GET-INPUT.
+           PERFORM WRITE-OUTPUT.
+           MOVE USER-INPUT TO EDU-SCHOOL(EDU-COUNT).
+
+           INITIALIZE PROFILE-PROMPT.
+           STRING "Education #" DELIMITED BY SIZE
+                   EDU-COUNT DELIMITED BY SIZE
+                   " - Years Attended (e.g., 2023-2025):"
+                   DELIMITED BY SIZE
+             INTO PROFILE-PROMPT
+           END-STRING.
+           PERFORM GET-INPUT.
+           PERFORM WRITE-OUTPUT.
+           MOVE USER-INPUT TO EDU-YEARS(EDU-COUNT).
+
+       WRITE-EDUCATION.
+      *    Writes the header once, then one indented block per entry
+           INITIALIZE PROFILE-LOG.
+           MOVE "Education:" TO PROFILE-LOG.
+           PERFORM WRITE-PROFILE.
+           PERFORM VARYING EDU-INDEX FROM 1 BY 1
+               UNTIL EDU-INDEX > EDU-COUNT
+               INITIALIZE PROFILE-LOG
+               STRING " Degree: " DELIMITED BY SIZE
+                       FUNCTION TRIM(EDU-DEGREE(EDU-INDEX))
+                       DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+               INITIALIZE PROFILE-LOG
+               STRING " University: " DELIMITED BY SIZE
+                       FUNCTION TRIM(EDU-SCHOOL(EDU-INDEX))
+                       DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+               INITIALIZE PROFILE-LOG
+               STRING " Years: " DELIMITED BY SIZE
+                       FUNCTION TRIM(EDU-YEARS(EDU-INDEX))
+                       DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+           END-PERFORM.
+
        VIEW-PROFILE.
-      *    Option 2 placeholder, only shows the header for now
-      *    Profile display will be added later in Epic 2
+      *    Displays every line stored in the user's profile file
 
       *    First checks if user tries to open a folder that does
       *    not exist
@@ -820,6 +933,7 @@ IDENTIFICATION DIVISION.
            WRITE OUTPUT-RECORD.
        
        WRITE-PROFILE.
-           MOVE FUNCTION TRIM(PROFILE-LOG) TO PROFILE-RECORD
+           MOVE FUNCTION TRIM(PROFILE-LOG TRAILING)
+               TO PROFILE-RECORD
            WRITE PROFILE-RECORD.
            
