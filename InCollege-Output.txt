@@ -6,26 +6,20 @@ Please enter your username: aho37@usf.edu
 Please enter your password: HOandy23!
 You have successfully logged in
 Welcome, aho37@usf.edu!
-1. Edit My Profile
+1. Create My Profile
 2. View My Profile
 3. Search for a job
 4. Find someone you know
 5. Learn a New Skill
 Enter your choice: 2
---- Your Profile ---
-Name: Andy Ho
-University: USF
-Major: Computer Science
-Graduation Year: 2026
-About Me: 2
---------------------
-1. Edit My Profile
+Your profile does not exist. Please create profile
+1. Create My Profile
 2. View My Profile
 3. Search for a job
 4. Find someone you know
 5. Learn a New Skill
 Enter your choice: 1
---- Edit Profile ---
+--- Create Profile ---
 Enter First Name: Andy
 Enter Last Name: Ho
 Enter University/College Attended: USF
