@@ -1,52 +1,18 @@
 Welcome to InCollege!
 Log In
 Create New Account.
-Enter your choice: Log In
-Please enter your username: JohnDoe123456
-Please enter your password: tEstpass3@!
-You have successfully logged in
-Welcome, JohnDoe123456!
+Enter your choice: Create New Account
+Please create your username: aho37@usf.edu
+Please create your password: HOandy23!
+Account Created Successfully!
+Welcome, aho37@usf.edu!
 1. Create My Profile
 2. View My Profile
 3. Search for a job
 4. Find someone you know
 5. Learn a New Skill
 Enter your choice: 1
---- Create/Edit Profile ---
-1. Edit My Profile
-2. View My Profile
-3. Search for a job
-4. Find someone you know
-5. Learn a New Skill
-Enter your choice: 3
-Job search is under construction.
-1. Edit My Profile
-2. View My Profile
-3. Search for a job
-4. Find someone you know
-5. Learn a New Skill
-Enter your choice: 5
-Learn a New Skill:
-Communication
-Coding
-Teamwork
-Leadership
-Critical Thinking
-Go Back
-Enter your choice: Coding
-Coding skill is under construction.
-Learn a New Skill:
-Communication
-Coding
-Teamwork
-Leadership
-Critical Thinking
-Go Back
-Enter your choice: Go Back
-1. Edit My Profile
-2. View My Profile
-3. Search for a job
-4. Find someone you know
-5. Learn a New Skill
-Enter your choice:
-Logging out..
+--- Create Profile ---
+Enter First Name: Andy
+Enter Last Name: Ho
+Input ended prematurely
