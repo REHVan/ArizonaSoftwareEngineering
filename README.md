@@ -2,6 +2,7 @@
 
 ## Part 2: User Profile Creation
 
+## IMPORTANT NOTE! THE PROGRAM DEPENDS ON "user-data" FOLDER EXISTING IN THE SAME FOLDER AS THE PROGRAM, IF THE FOLDER DOES NOT CARRY OVER WHEN COPYING THE REPO, PLEASE CREATE "user-data" IN SAME FOLDER.
 ### How to Compile & Run
 
 Place all files in the same folder, open the directory in VS Code via WSL, then run `Code .` to open with the dev container.
@@ -15,7 +16,6 @@ cobc -x -o InCollege InCollege.cob
 ```bash
 ./InCollege
 ```
-## IMPORTANT NOTE! THE PROGRAM DEPENDS ON "user-data" folder existing in the same folder as the program, if the folder did not carry over when downloading, PLEASE CREATE "user-data" IN SAME FOLDER.
 
 ### Input File
 Edit `InCollege-Input.txt` — one response per line, in the order the program prompts for them.
