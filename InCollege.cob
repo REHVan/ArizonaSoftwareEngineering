@@ -54,7 +54,6 @@
            01 OUTPUT-FILE-STATUS PIC XX.
                88 OUTPUT-NOT-FOUND VALUE "35".
            
-           01 FIELD-isREQUIRED PIC X(1) VALUE 'N'.
            01 PROFILE-FILE-STATUS PIC XX.
                88 PROFILE-FOUND VALUE "00".
                88 PROFILE-NOT-FOUND VALUE "35".
@@ -604,13 +603,13 @@
                AT END 
                    MOVE "Input ended prematurely" TO LOG-MSG
                    PERFORM WRITE-OUTPUT
-      *            If a required field is blank, clears the profile
-      *            as a profile is only complete if required fields
-      *            are present
-                   IF FIELD-isREQUIRED = 'Y'
-                       CLOSE PROFILE-FILE
-                       OPEN OUTPUT PROFILE-FILE
-                   END-IF
+      *            If input during profile creation ends early
+      *            clear profile file, this ensures the profile is only
+      *            written once all fields are entered and does not get
+      *            cut off unexpectedly
+                   CLOSE PROFILE-FILE
+                   OPEN OUTPUT PROFILE-FILE
+
                    CLOSE INPUT-FILE OUTPUT-FILE PROFILE-FILE
                    STOP RUN
                NOT AT END
@@ -627,7 +626,6 @@
        PROFILE-NAME.
       *    First and last name are both required, so keep
       *    prompting until something other than spaces is entered
-           MOVE 'Y' TO FIELD-isREQUIRED.
            MOVE SPACES TO PROFILE-FIRSTNAME.
            PERFORM UNTIL PROFILE-FIRSTNAME NOT = SPACES
                MOVE "Enter First Name:" TO PROFILE-PROMPT
@@ -641,7 +639,6 @@
                END-IF
            END-PERFORM.
 
-           MOVE 'Y' TO FIELD-isREQUIRED.
            MOVE SPACES TO PROFILE-LASTNAME.
            PERFORM UNTIL PROFILE-LASTNAME NOT = SPACES
                MOVE "Enter Last Name:" TO PROFILE-PROMPT
@@ -668,7 +665,6 @@
 
        PROFILE-UNIVERSITY-MAJOR.
       *    University and major are both required
-           MOVE 'Y' TO FIELD-isREQUIRED.
            MOVE SPACES TO PROFILE-UNIVERSITY.
            PERFORM UNTIL PROFILE-UNIVERSITY NOT = SPACES
                MOVE "Enter University/College Attended:"
@@ -690,7 +686,6 @@
            END-STRING.
            PERFORM WRITE-PROFILE.
            
-           MOVE 'Y' TO FIELD-isREQUIRED.
            MOVE SPACES TO PROFILE-MAJOR.
            PERFORM UNTIL PROFILE-MAJOR NOT = SPACES
                MOVE "Enter Major:" TO PROFILE-PROMPT
@@ -713,7 +708,6 @@
       
        PROFILE-GRADUATION.
       *    Graduation Field is required
-           MOVE 'Y' TO FIELD-isREQUIRED.
       *    Makes sure the loop runs at least once
            MOVE ZEROS TO GRADUATION-YEAR.
       *    Because graduation year is only numeric, only check if it is
@@ -749,7 +743,6 @@
            
        PROFILE-ABOUT-ME.
       *    Optional field, a blank line skips it and writes nothing
-           MOVE 'N' TO FIELD-isREQUIRED.
            MOVE SPACES TO ABOUT-ME.
            MOVE "Enter About Me (optional, max 200 chars, enter blank
       -    "line to skip):" TO PROFILE-PROMPT.
@@ -768,7 +761,6 @@
        PROFILE-EXPERIENCE.
       *    Optional, up to three entries. DONE ends the list early and
       *    the loop also stops on its own once three are entered
-           MOVE 'N' TO FIELD-isREQUIRED.
            MOVE 0 TO EXP-COUNT.
            MOVE 'N' TO EXP-DONE.
            PERFORM UNTIL EXP-DONE = 'Y' OR EXP-COUNT = 3
@@ -905,7 +897,6 @@
        PROFILE-EDUCATION.
       *    Optional, up to three entries. DONE ends the list early and
       *    the loop also stops on its own once three are entered
-           MOVE 'N' TO FIELD-isREQUIRED.
            MOVE 0 TO EDU-COUNT.
            MOVE 'N' TO EDU-DONE.
            PERFORM UNTIL EDU-DONE = 'Y' OR EDU-COUNT = 3
