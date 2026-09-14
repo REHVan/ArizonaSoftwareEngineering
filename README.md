@@ -19,18 +19,46 @@ cobc -x -o InCollege InCollege.cob
 ### Input File
 Edit `InCollege-Input.txt` — one response per line, in the order the program prompts for them.
 
-Example (Create Account flow):
+Example (Create Account flow + Create Profile):
 ```
 Create New Account
-John Doe
-John6769420@!@@@@!$
+Username
+Password
+1
+First Name
+Last Name
+University of South Florida
+Major
+2026
+DONE
+DONE
+2
 ```
 
-Example (Log In flow):
+Example (Log In + Edit Profile Flow):
 ```
 Log In
-John Doe
-John6769420@!@@@@!$
+Username
+Password
+1
+First Name
+Last Name
+University
+Major
+2026
+Enthusiastic Computer Science Student looking for experience
+Any Input
+Title
+Company
+Years
+Description
+DONE
+Any input
+Degree
+Institution
+Years Attended
+DONE
+2
 ```
 
 ### Output File
