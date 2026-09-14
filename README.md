@@ -1,6 +1,6 @@
 # ArizonaSoftwareEngineering
 
-## Part 1: Login
+## Part 2: User Profile Creation
 
 ### How to Compile & Run
 
@@ -15,6 +15,7 @@ cobc -x -o InCollege InCollege.cob
 ```bash
 ./InCollege
 ```
+## IMPORTANT NOTE! THE PROGRAM DEPENDS ON "user-data" folder existing in the same folder as the program, if the folder did not carry over when downloading, PLEASE CREATE "user-data" IN SAME FOLDER.
 
 ### Input File
 Edit `InCollege-Input.txt` — one response per line, in the order the program prompts for them.
