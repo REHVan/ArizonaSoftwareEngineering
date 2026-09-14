@@ -12,7 +12,7 @@
            ASSIGN TO "InCollege-Input.txt"
            ORGANIZATION IS LINE SEQUENTIAL
            FILE STATUS IS INPUT-FILE-STATUS.
-      *    Output log file (KAN-41/42: dual output)
+      *    Output log file for dual output
            SELECT OUTPUT-FILE
            ASSIGN TO "InCollege-Output.txt"
            ORGANIZATION IS LINE SEQUENTIAL
@@ -33,9 +33,9 @@
        FD INPUT-FILE.
       *    Input file 
            01 INPUT-RECORD.
-               05 USER-INPUT PIC X(80).
+               05 USER-INPUT PIC X(200).
        FD OUTPUT-FILE.
-           01 OUTPUT-RECORD PIC X(80).
+           01 OUTPUT-RECORD PIC X(300).
        
        FD ACCOUNTS-FILE.
            01 ACCOUNTS-RECORD.
@@ -43,7 +43,7 @@
                05 ACCOUNT-SEPARATOR PIC X(1).
                05 ACCOUNT-PASS PIC X(12).
        FD PROFILE-FILE.
-           01 PROFILE-RECORD PIC X(200).
+           01 PROFILE-RECORD PIC X(300).
           
        WORKING-STORAGE SECTION.
            01 ACCOUNTS-EOF     PIC X(1) VALUE 'N'.
@@ -54,6 +54,7 @@
            01 OUTPUT-FILE-STATUS PIC XX.
                88 OUTPUT-NOT-FOUND VALUE "35".
            
+           01 FIELD-isREQUIRED PIC X(1) VALUE 'N'.
            01 PROFILE-FILE-STATUS PIC XX.
                88 PROFILE-FOUND VALUE "00".
                88 PROFILE-NOT-FOUND VALUE "35".
@@ -63,14 +64,37 @@
                88 LOGIN-VALID-TRUE VALUE 'Y'.
                88 LOGIN-VALID-FALSE VALUE 'N'.
       *    Username validation flags
-           01 PROFILE-PROMPT PIC X(80).
+           01 PROFILE-PROMPT PIC X(100).
            
            01 PROFILE-PREFIX PIC X(80).
            01 PROFILE-STRING PIC X(80).
       *    File that hold user profile
            01 PROFILE-FIRSTNAME PIC X(80).
            01 PROFILE-LASTNAME PIC X(80).
+      *    Required university and major fields
+           01 PROFILE-UNIVERSITY PIC X(80).
+           01 PROFILE-MAJOR PIC X(80).
            01 GRADUATION-YEAR PIC 9(4).
+           01 ABOUT-ME PIC X(200).
+      *    Up to three work experience entries per profile
+           01 EXPERIENCE-TABLE.
+               05 EXPERIENCE-ENTRY OCCURS 3 TIMES.
+                   10 EXP-TITLE PIC X(80).
+                   10 EXP-COMPANY PIC X(80).
+                   10 EXP-DATES PIC X(80).
+                   10 EXP-DESC PIC X(100).
+           01 EXP-COUNT PIC 9 VALUE 0.
+           01 EXP-INDEX PIC 9 VALUE 0.
+           01 EXP-DONE PIC X(1) VALUE 'N'.
+      *    Up to three education entries per profile
+           01 EDUCATION-TABLE.
+               05 EDUCATION-ENTRY OCCURS 3 TIMES.
+                   10 EDU-DEGREE PIC X(80).
+                   10 EDU-SCHOOL PIC X(80).
+                   10 EDU-YEARS PIC X(80).
+           01 EDU-COUNT PIC 9 VALUE 0.
+           01 EDU-INDEX PIC 9 VALUE 0.
+           01 EDU-DONE PIC X(1) VALUE 'N'.
            01 USERNAME-STATUS PIC X(1) VALUE 'N'.
                88 USERNAME-UNIQUE-TRUE VALUE 'Y'.
                88 USERNAME-UNIQUE-FALSE VALUE 'N'.
@@ -86,9 +110,9 @@
            01 NEW-USERNAME PIC X(80).
            01 USERNAME-CHARACTER-INDEX PIC 99 VALUE 0.
            01 USERNAME-LENGTH PIC 99.
-           01 LOG-MSG PIC X(80) VALUE SPACES.
-           01 PROFILE-LOG PIC X(200) VALUE SPACES.
-           01 STRING-MESSAGE PIC X(80) VALUE SPACES.
+           01 LOG-MSG PIC X(300) VALUE SPACES.
+           01 PROFILE-LOG PIC X(300) VALUE SPACES.
+           01 STRING-MESSAGE PIC X(300) VALUE SPACES.
            01 USER-NAME PIC X(80).
            01 NUM-ACCOUNTS PIC 9(1).
 
@@ -353,7 +377,7 @@
            CLOSE ACCOUNTS-FILE.
 
        PASSWORD-VALIDATION.
-      *    Validates password based on length, uppercase, digit, and special 
+      *    Validates password on length, uppercase, digit, special
 
       *    Reset all validation flags before checking a password
            MOVE 'N' TO IS-VALID.
@@ -366,7 +390,7 @@
       *    Index through at most 80 chars
            PERFORM VARYING PASSWORD-CHARACTER-INDEX FROM 1 BY 1
                UNTIL PASSWORD-CHARACTER-INDEX > 80
-      *    If the character is not a space, then it's part of the password
+      *    If the character is not a space, it is part of the password
                IF USER-INPUT(PASSWORD-CHARACTER-INDEX:1) NOT = SPACE
       *    Save final position to find password length, then exit loop
                    MOVE PASSWORD-CHARACTER-INDEX 
@@ -554,8 +578,8 @@
                    STOP RUN
            END-EVALUATE.
        CREATE-EDIT-PROFILE.
-      *    Option 1 placeholder, only shows the header for now
-      *    Full create/edit profile flow will be added later in Epic 2
+      *    Create and edit ask the same questions, only the header
+      *    changes, so both paths run the same prompt paragraphs
            IF HAS-FILE = 'N'
                MOVE "--- Create Profile ---" TO LOG-MSG
            ELSE
@@ -563,17 +587,30 @@
            END-IF.
            PERFORM WRITE-OUTPUT.
            OPEN OUTPUT PROFILE-FILE.
-      *    TODO Implement data
-      *    Function to get input and keeps it all on one line
+      *    Each paragraph prompts, validates, then writes its own
+      *    line to the profile file in the order the sample shows
+           PERFORM PROFILE-NAME
+           PERFORM PROFILE-UNIVERSITY-MAJOR
            PERFORM PROFILE-GRADUATION
-           PERFORM WRITE-PROFILE
+           PERFORM PROFILE-ABOUT-ME
+           PERFORM PROFILE-EXPERIENCE
+           PERFORM PROFILE-EDUCATION
            CLOSE PROFILE-FILE.
+           MOVE "Profile saved successfully!" TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
 
        GET-INPUT.
            READ INPUT-FILE
                AT END 
                    MOVE "Input ended prematurely" TO LOG-MSG
                    PERFORM WRITE-OUTPUT
+      *            If a required field is blank, clears the profile
+      *            as a profile is only complete if required fields
+      *            are present
+                   IF FIELD-isREQUIRED = 'Y'
+                       CLOSE PROFILE-FILE
+                       OPEN OUTPUT PROFILE-FILE
+                   END-IF
                    CLOSE INPUT-FILE OUTPUT-FILE PROFILE-FILE
                    STOP RUN
                NOT AT END
@@ -586,11 +623,103 @@
                    END-STRING
                    MOVE STRING-MESSAGE TO LOG-MSG
                END-READ.
+
+       PROFILE-NAME.
+      *    First and last name are both required, so keep
+      *    prompting until something other than spaces is entered
+           MOVE 'Y' TO FIELD-isREQUIRED.
+           MOVE SPACES TO PROFILE-FIRSTNAME.
+           PERFORM UNTIL PROFILE-FIRSTNAME NOT = SPACES
+               MOVE "Enter First Name:" TO PROFILE-PROMPT
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "First Name is required" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               ELSE
+                   MOVE USER-INPUT TO PROFILE-FIRSTNAME
+               END-IF
+           END-PERFORM.
+
+           MOVE 'Y' TO FIELD-isREQUIRED.
+           MOVE SPACES TO PROFILE-LASTNAME.
+           PERFORM UNTIL PROFILE-LASTNAME NOT = SPACES
+               MOVE "Enter Last Name:" TO PROFILE-PROMPT
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Last Name is required" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               ELSE
+                   MOVE USER-INPUT TO PROFILE-LASTNAME
+               END-IF
+           END-PERFORM.
+
+      *    The sample profile shows one Name line, not two, so the
+      *    two fields are joined before being written
+           INITIALIZE PROFILE-LOG.
+           STRING "Name: " DELIMITED BY SIZE
+                   FUNCTION TRIM(PROFILE-FIRSTNAME) DELIMITED BY SIZE
+                   " " DELIMITED BY SIZE
+                   FUNCTION TRIM(PROFILE-LASTNAME) DELIMITED BY SIZE
+             INTO PROFILE-LOG
+           END-STRING.
+           PERFORM WRITE-PROFILE.
+
+       PROFILE-UNIVERSITY-MAJOR.
+      *    University and major are both required
+           MOVE 'Y' TO FIELD-isREQUIRED.
+           MOVE SPACES TO PROFILE-UNIVERSITY.
+           PERFORM UNTIL PROFILE-UNIVERSITY NOT = SPACES
+               MOVE "Enter University/College Attended:"
+                 TO PROFILE-PROMPT
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "University/College is required" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               ELSE
+                   MOVE USER-INPUT TO PROFILE-UNIVERSITY
+               END-IF
+           END-PERFORM.
+
+           INITIALIZE PROFILE-LOG.
+           STRING "University: " DELIMITED BY SIZE
+                   FUNCTION TRIM(PROFILE-UNIVERSITY) DELIMITED BY SIZE
+             INTO PROFILE-LOG
+           END-STRING.
+           PERFORM WRITE-PROFILE.
+           
+           MOVE 'Y' TO FIELD-isREQUIRED.
+           MOVE SPACES TO PROFILE-MAJOR.
+           PERFORM UNTIL PROFILE-MAJOR NOT = SPACES
+               MOVE "Enter Major:" TO PROFILE-PROMPT
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Major is required" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               ELSE
+                   MOVE USER-INPUT TO PROFILE-MAJOR
+               END-IF
+           END-PERFORM.
+
+           INITIALIZE PROFILE-LOG.
+           STRING "Major: " DELIMITED BY SIZE
+                   FUNCTION TRIM(PROFILE-MAJOR) DELIMITED BY SIZE
+             INTO PROFILE-LOG
+           END-STRING.
+           PERFORM WRITE-PROFILE.
       
        PROFILE-GRADUATION.
+      *    Graduation Field is required
+           MOVE 'Y' TO FIELD-isREQUIRED.
+      *    Makes sure the loop runs at least once
+           MOVE ZEROS TO GRADUATION-YEAR.
+      *    Because graduation year is only numeric, only check if it is
+      *    in valid range
            PERFORM UNTIL GRADUATION-YEAR > 2025 
                          AND GRADUATION-YEAR < 2034
-               
                MOVE "Enter Graduation Year (YYYY):" TO PROFILE-PROMPT
                PERFORM GET-INPUT
                IF FUNCTION TRIM(USER-INPUT) IS NUMERIC
@@ -607,23 +736,289 @@
                    MOVE "Invalid Year. Please enter a year in between 20
       -            "26 and 2033." TO LOG-MSG
                    PERFORM WRITE-OUTPUT
-                WHEN GRADUATION-YEAR IS NOT = 2026
-                     AND GRADUATION-YEAR IS NOT = 2033
-                   MOVE "Graduation year is required" TO LOG-MSG
-                   PERFORM WRITE-OUTPUT
                END-EVALUATE
            END-PERFORM.
 
       *    Reaching here means graduation year is valid
-           
+           INITIALIZE PROFILE-LOG.
            STRING "Graduation Year: " DELIMITED BY SIZE
-                  USER-INPUT DELIMITED BY SPACE
+                  GRADUATION-YEAR DELIMITED BY SIZE
               INTO PROFILE-LOG
            END-STRING.
+           PERFORM WRITE-PROFILE.
            
+       PROFILE-ABOUT-ME.
+      *    Optional field, a blank line skips it and writes nothing
+           MOVE 'N' TO FIELD-isREQUIRED.
+           MOVE SPACES TO ABOUT-ME.
+           MOVE "Enter About Me (optional, max 200 chars, enter blank
+      -    "line to skip):" TO PROFILE-PROMPT.
+           PERFORM GET-INPUT.
+           PERFORM WRITE-OUTPUT.
+           IF USER-INPUT NOT = SPACES
+               MOVE USER-INPUT TO ABOUT-ME
+               INITIALIZE PROFILE-LOG
+               STRING "About Me: " DELIMITED BY SIZE
+                       FUNCTION TRIM(ABOUT-ME) DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+           END-IF.
+
+       PROFILE-EXPERIENCE.
+      *    Optional, up to three entries. DONE ends the list early and
+      *    the loop also stops on its own once three are entered
+           MOVE 'N' TO FIELD-isREQUIRED.
+           MOVE 0 TO EXP-COUNT.
+           MOVE 'N' TO EXP-DONE.
+           PERFORM UNTIL EXP-DONE = 'Y' OR EXP-COUNT = 3
+               MOVE "Add Experience? (optional, max 3 entries, Enter 'DO
+      -         "NE' to finish. ): " TO PROFILE-PROMPT
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               EVALUATE TRUE
+                WHEN FUNCTION TRIM(USER-INPUT) = "DONE"
+                   MOVE 'Y' TO EXP-DONE
+                WHEN OTHER
+                   ADD 1 TO EXP-COUNT
+                   PERFORM EXPERIENCE-ENTRY-INPUT
+               END-EVALUATE
+           END-PERFORM.
+           IF EXP-COUNT > 0
+               PERFORM WRITE-EXPERIENCE
+           END-IF.
+           IF EXP-COUNT = 3
+               MOVE "Cannot enter anymore experiences." TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+           END-IF.
+
+       EXPERIENCE-ENTRY-INPUT.
+      *    Title, company and dates are required parts of the entry. The
+      *    description is optional and a blank line leaves it empty
+           INITIALIZE PROFILE-PROMPT.
+           MOVE SPACES TO USER-INPUT.
+           PERFORM UNTIL USER-INPUT NOT = SPACES
+               STRING "Experience #" DELIMITED BY SIZE
+                       EXP-COUNT DELIMITED BY SIZE
+                       " - Title:" DELIMITED BY SIZE
+               INTO PROFILE-PROMPT
+               END-STRING
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Title field is required." TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               END-IF
+           END-PERFORM.
+           
+           MOVE USER-INPUT TO EXP-TITLE(EXP-COUNT).
+
+           INITIALIZE PROFILE-PROMPT.
+           MOVE SPACES TO USER-INPUT.
+           PERFORM UNTIL USER-INPUT NOT = SPACES
+               STRING "Experience #" DELIMITED BY SIZE
+                       EXP-COUNT DELIMITED BY SIZE
+                       " - Company/Organization:" DELIMITED BY SIZE
+               INTO PROFILE-PROMPT
+               END-STRING
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Company/Organization field is required." 
+                   TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               END-IF
+           END-PERFORM.
+           
+           MOVE USER-INPUT TO EXP-COMPANY(EXP-COUNT).
+
+           INITIALIZE PROFILE-PROMPT.
+           MOVE SPACES TO USER-INPUT.
+           PERFORM UNTIL USER-INPUT NOT = SPACES
+               STRING "Experience #" DELIMITED BY SIZE
+                       EXP-COUNT DELIMITED BY SIZE
+                   " - Dates (e.g., Summer 2024):" DELIMITED BY SIZE
+                  INTO PROFILE-PROMPT
+               END-STRING
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Date field is required." TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               END-IF
+           END-PERFORM.
+           
+           MOVE USER-INPUT TO EXP-DATES(EXP-COUNT).
+
+           INITIALIZE PROFILE-PROMPT.
+           STRING "Experience #" DELIMITED BY SIZE
+                   EXP-COUNT DELIMITED BY SIZE
+                   " - Description (optional, max 100 chars, blank to "
+                   DELIMITED BY SIZE
+                   "skip):" DELIMITED BY SIZE
+             INTO PROFILE-PROMPT
+           END-STRING.
+           PERFORM GET-INPUT.
+           PERFORM WRITE-OUTPUT.
+           MOVE USER-INPUT TO EXP-DESC(EXP-COUNT).
+
+       WRITE-EXPERIENCE.
+      *    Writes the header once, then one indented block per entry.
+      *    A blank description is left out of the saved profile
+           INITIALIZE PROFILE-LOG.
+           MOVE "Experience:" TO PROFILE-LOG.
+           PERFORM WRITE-PROFILE.
+           PERFORM VARYING EXP-INDEX FROM 1 BY 1
+               UNTIL EXP-INDEX > EXP-COUNT
+               INITIALIZE PROFILE-LOG
+               STRING " Title: " DELIMITED BY SIZE
+                       FUNCTION TRIM(EXP-TITLE(EXP-INDEX))
+                       DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+               INITIALIZE PROFILE-LOG
+               STRING " Company: " DELIMITED BY SIZE
+                       FUNCTION TRIM(EXP-COMPANY(EXP-INDEX))
+                       DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+               INITIALIZE PROFILE-LOG
+               STRING " Dates: " DELIMITED BY SIZE
+                       FUNCTION TRIM(EXP-DATES(EXP-INDEX))
+                       DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+               IF EXP-DESC(EXP-INDEX) NOT = SPACES
+                   INITIALIZE PROFILE-LOG
+                   STRING " Description: " DELIMITED BY SIZE
+                           FUNCTION TRIM(EXP-DESC(EXP-INDEX))
+                           DELIMITED BY SIZE
+                     INTO PROFILE-LOG
+                   END-STRING
+                   PERFORM WRITE-PROFILE
+               END-IF
+           END-PERFORM.
+
+       PROFILE-EDUCATION.
+      *    Optional, up to three entries. DONE ends the list early and
+      *    the loop also stops on its own once three are entered
+           MOVE 'N' TO FIELD-isREQUIRED.
+           MOVE 0 TO EDU-COUNT.
+           MOVE 'N' TO EDU-DONE.
+           PERFORM UNTIL EDU-DONE = 'Y' OR EDU-COUNT = 3
+               MOVE "Add Education (optional, max 3 entries. Enter 'DONE
+      -        "' to finish):" TO PROFILE-PROMPT
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF FUNCTION TRIM(USER-INPUT) = "DONE"
+                   MOVE 'Y' TO EDU-DONE
+               ELSE
+                   ADD 1 TO EDU-COUNT
+                   PERFORM EDUCATION-ENTRY-INPUT
+               END-IF
+           END-PERFORM.
+           IF EDU-COUNT > 0
+               PERFORM WRITE-EDUCATION
+           END-IF.
+           IF EDU-COUNT = 3
+               MOVE "Education limit reached. Please edit profile if you
+      -         "wish to change any." TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+           END-IF.
+
+       EDUCATION-ENTRY-INPUT.
+      *    Collects one entry, numbered by how many are stored so far
+           MOVE SPACES TO USER-INPUT.
+           INITIALIZE PROFILE-PROMPT.
+           PERFORM UNTIL USER-INPUT NOT = SPACES
+               STRING "Education #" DELIMITED BY SIZE
+                       EDU-COUNT DELIMITED BY SIZE
+                       " - Degree:" DELIMITED BY SIZE
+                INTO PROFILE-PROMPT
+               END-STRING
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Degree Field must not be blank." TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               END-IF
+           END-PERFORM.
+           MOVE USER-INPUT TO EDU-DEGREE(EDU-COUNT).
+           
+           MOVE SPACES TO USER-INPUT.
+           INITIALIZE PROFILE-PROMPT.
+           PERFORM UNTIL USER-INPUT NOT = SPACES 
+               STRING "Education #" DELIMITED BY SIZE
+                       EDU-COUNT DELIMITED BY SIZE
+                       " - University/College:" DELIMITED BY SIZE
+                 INTO PROFILE-PROMPT
+               END-STRING
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Univeristy/College Field must not be blank." 
+                   TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               END-IF
+           END-PERFORM.
+
+           MOVE USER-INPUT TO EDU-SCHOOL(EDU-COUNT).
+           
+           MOVE SPACES TO USER-INPUT
+           INITIALIZE PROFILE-PROMPT.
+           PERFORM UNTIL USER-INPUT NOT = SPACES
+               STRING "Education #" DELIMITED BY SIZE
+                       EDU-COUNT DELIMITED BY SIZE
+                       " - Years Attended (e.g., 2023-2025):"
+                       DELIMITED BY SIZE
+                 INTO PROFILE-PROMPT
+               END-STRING
+               PERFORM GET-INPUT
+               PERFORM WRITE-OUTPUT
+               IF USER-INPUT = SPACES
+                   MOVE "Years Attended field must not be blank." 
+                   TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+               END-IF
+           END-PERFORM.
+
+           MOVE USER-INPUT TO EDU-YEARS(EDU-COUNT).
+
+       WRITE-EDUCATION.
+      *    Writes the header once, then one indented block per entry
+           INITIALIZE PROFILE-LOG.
+           MOVE "Education:" TO PROFILE-LOG.
+           PERFORM WRITE-PROFILE.
+           PERFORM VARYING EDU-INDEX FROM 1 BY 1
+               UNTIL EDU-INDEX > EDU-COUNT
+               INITIALIZE PROFILE-LOG
+               STRING " Degree: " DELIMITED BY SIZE
+                       FUNCTION TRIM(EDU-DEGREE(EDU-INDEX))
+                       DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+               INITIALIZE PROFILE-LOG
+               STRING " University: " DELIMITED BY SIZE
+                       FUNCTION TRIM(EDU-SCHOOL(EDU-INDEX))
+                       DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+               INITIALIZE PROFILE-LOG
+               STRING " Years: " DELIMITED BY SIZE
+                       FUNCTION TRIM(EDU-YEARS(EDU-INDEX))
+                       DELIMITED BY SIZE
+                 INTO PROFILE-LOG
+               END-STRING
+               PERFORM WRITE-PROFILE
+           END-PERFORM.
+
        VIEW-PROFILE.
-      *    Option 2 placeholder, only shows the header for now
-      *    Profile display will be added later in Epic 2
+      *    Displays every line stored in the user's profile file
 
       *    First checks if user tries to open a folder that does
       *    not exist
@@ -660,6 +1055,8 @@
                        PERFORM WRITE-OUTPUT
                 END-READ
            END-PERFORM.
+           MOVE "--------------------" TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
        SKILL-MENU.
       *    Shows user list of skills to learn, each option other than
       *    Go back will display message, menu will keep appearing until
@@ -715,7 +1112,7 @@
                    TO LOG-MSG
                    PERFORM WRITE-OUTPUT
                WHEN "Critical Thinking"
-                   MOVE "Critical Thinking skill is under construction." 
+                   MOVE "Critical Thinking skill is under construction."
                    TO LOG-MSG
                    PERFORM WRITE-OUTPUT
                WHEN NOT "Go Back"
@@ -727,7 +1124,7 @@
            END-EVALUATE.
                 
       *    Dual output - display to console AND write to file
-      *    KAN-101: The file WRITE drops trailing spaces, so DISPLAY
+      *    The file WRITE drops trailing spaces, so DISPLAY
       *    trims them too so screen and file lines are byte-identical
        WRITE-OUTPUT.
            MOVE FUNCTION TRIM(LOG-MSG TRAILING) TO OUTPUT-RECORD
@@ -735,5 +1132,7 @@
            WRITE OUTPUT-RECORD.
        
        WRITE-PROFILE.
-           MOVE FUNCTION TRIM(PROFILE-LOG) TO PROFILE-RECORD
+           MOVE FUNCTION TRIM(PROFILE-LOG TRAILING)
+               TO PROFILE-RECORD
            WRITE PROFILE-RECORD.
+           
