@@ -765,17 +765,17 @@
            MOVE 'N' TO EXP-DONE.
            PERFORM UNTIL EXP-DONE = 'Y' OR EXP-COUNT = 3
                MOVE "Add Experience? (optional, max 3 entries, Enter 'DO
-      -         "NE' to finish. ): " TO PROFILE-PROMPT
+      -         "NE' to finish. Else Enter 'ADD' ): " TO PROFILE-PROMPT
                PERFORM GET-INPUT
                PERFORM WRITE-OUTPUT
                EVALUATE TRUE
                 WHEN FUNCTION TRIM (USER-INPUT) = "DONE"
                    MOVE 'Y' TO EXP-DONE
-                WHEN USER-INPUT = SPACES
+                WHEN USER-INPUT = "ADD"
                    ADD 1 TO EXP-COUNT
                    PERFORM EXPERIENCE-ENTRY-INPUT
                 WHEN OTHER
-                   MOVE "Invalid Choice, Please enter a blank or DONE"
+                   MOVE "Invalid Choice, Please enter ADD or DONE"
                    TO LOG-MSG
                    PERFORM WRITE-OUTPUT
                END-EVALUATE
@@ -905,19 +905,19 @@
            MOVE 'N' TO EDU-DONE.
            PERFORM UNTIL EDU-DONE = 'Y' OR EDU-COUNT = 3
                MOVE "Add Education (optional, max 3 entries. Enter 'DONE
-      -        "' to finish):" TO PROFILE-PROMPT
+      -        "' to finish, else enter ADD):" TO PROFILE-PROMPT
                PERFORM GET-INPUT
                PERFORM WRITE-OUTPUT
                EVALUATE TRUE
                 WHEN FUNCTION TRIM (USER-INPUT) = "DONE"
                    MOVE 'Y' TO EDU-DONE
-                WHEN USER-INPUT = SPACES
-                       ADD 1 TO EDU-COUNT
-                       PERFORM EDUCATION-ENTRY-INPUT
+                WHEN FUNCTION TRIM(USER-INPUT) = "ADD"
+                   ADD 1 TO EDU-COUNT
+                   PERFORM EDUCATION-ENTRY-INPUT
                 WHEN OTHER
-                 MOVE "Invalid Choice, Please enter a blank or DONE"
-                 TO LOG-MSG
-                 PERFORM WRITE-OUTPUT
+                   MOVE "Invalid Choice, Please enter ADD or DONE"
+                   TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
                END-EVALUATE
            END-PERFORM.
            IF EDU-COUNT > 0
