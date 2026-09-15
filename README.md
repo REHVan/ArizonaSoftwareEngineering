@@ -65,4 +65,8 @@ Or run individual suites:
 | `tests/test_KAN28_login.sh` | KAN-28 | Successful login, invalid menu choice, empty credentials |
 | `tests/test_KAN31_37_menus.sh` | KAN-31, KAN-37 | Unexpected input timeout guard; Go Back stubs (activate when paragraphs are added) |
 | `tests/test_KAN24_persistence.sh` | KAN-24 | Output file survives between executions, run 1 vs run 2 content differs |
+| `tests/test_KAN64_74_profile_validation.sh` | KAN-64, KAN-74 | Profile edit success, blank/non-numeric/out-of-range field rejection (stubs until profile paragraph implemented) |
+| `tests/test_KAN84_experience_limits.sh` | KAN-84 | Zero, one, and three experience entries; timeout guard (stubs until experience paragraph implemented) |
+| `tests/test_KAN95_profile_persistence.sh` | KAN-95 | Account persists across restarts; profile field stubs (activate when EDIT-PROFILE implemented) |
+| `run_profile_batch_tests.sh` | KAN-99, KAN-100 | Edge-case batch inputs; logs to `results/` |
 | `test_dual_output.sh` | KAN-43 | Console stdout matches `InCollege-Output.txt` |
