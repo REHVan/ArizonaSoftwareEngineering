@@ -744,8 +744,8 @@
        PROFILE-ABOUT-ME.
       *    Optional field, a blank line skips it and writes nothing
            MOVE SPACES TO ABOUT-ME.
-           MOVE "Enter About Me (optional, max 200 chars, enter blank
-      -    "line to skip):" TO PROFILE-PROMPT.
+           MOVE "Enter About Me (optional, max 200 chars, enter blank li
+      -    "ne to skip):" TO PROFILE-PROMPT.
            PERFORM GET-INPUT.
            PERFORM WRITE-OUTPUT.
            IF USER-INPUT NOT = SPACES
@@ -769,11 +769,15 @@
                PERFORM GET-INPUT
                PERFORM WRITE-OUTPUT
                EVALUATE TRUE
-                WHEN FUNCTION TRIM(USER-INPUT) = "DONE"
+                WHEN FUNCTION TRIM (USER-INPUT) = "DONE"
                    MOVE 'Y' TO EXP-DONE
-                WHEN OTHER
+                WHEN USER-INPUT = SPACES
                    ADD 1 TO EXP-COUNT
                    PERFORM EXPERIENCE-ENTRY-INPUT
+                WHEN OTHER
+                   MOVE "Invalid Choice, Please enter a blank or DONE"
+                   TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
                END-EVALUATE
            END-PERFORM.
            IF EXP-COUNT > 0
@@ -904,12 +908,17 @@
       -        "' to finish):" TO PROFILE-PROMPT
                PERFORM GET-INPUT
                PERFORM WRITE-OUTPUT
-               IF FUNCTION TRIM(USER-INPUT) = "DONE"
+               EVALUATE TRUE
+                WHEN FUNCTION TRIM (USER-INPUT) = "DONE"
                    MOVE 'Y' TO EDU-DONE
-               ELSE
-                   ADD 1 TO EDU-COUNT
-                   PERFORM EDUCATION-ENTRY-INPUT
-               END-IF
+                WHEN USER-INPUT = SPACES
+                       ADD 1 TO EDU-COUNT
+                       PERFORM EDUCATION-ENTRY-INPUT
+                WHEN OTHER
+                 MOVE "Invalid Choice, Please enter a blank or DONE"
+                 TO LOG-MSG
+                 PERFORM WRITE-OUTPUT
+               END-EVALUATE
            END-PERFORM.
            IF EDU-COUNT > 0
                PERFORM WRITE-EDUCATION
