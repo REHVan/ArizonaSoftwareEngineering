@@ -572,9 +572,6 @@
                WHEN OTHER
                    MOVE "Unknown Option" TO LOG-MSG
                    PERFORM WRITE-OUTPUT
-                   CLOSE INPUT-FILE
-                   CLOSE OUTPUT-FILE
-                   STOP RUN
            END-EVALUATE.
        CREATE-EDIT-PROFILE.
       *    Create and edit ask the same questions, only the header
@@ -896,6 +893,11 @@
                    END-STRING
                    PERFORM WRITE-PROFILE
                END-IF
+               INITIALIZE PROFILE-LOG
+               IF EXP-INDEX NOT = EXP-COUNT
+                   MOVE " -------------------" TO PROFILE-LOG
+                   PERFORM WRITE-PROFILE
+               END-IF
            END-PERFORM.
 
        PROFILE-EDUCATION.
@@ -1015,6 +1017,10 @@
                  INTO PROFILE-LOG
                END-STRING
                PERFORM WRITE-PROFILE
+               IF EDU-INDEX NOT = EDU-COUNT
+                   MOVE " -------------------" TO PROFILE-LOG
+                   PERFORM WRITE-PROFILE
+               END-IF
            END-PERFORM.
 
        VIEW-PROFILE.
