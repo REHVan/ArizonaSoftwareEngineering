@@ -1,0 +1,28 @@
+Welcome to InCollege!
+Log In
+Create New Account.
+Enter your choice: Log In
+Please enter your username: JohnDoe123456
+Please enter your password: tEstpass3@!
+You have successfully logged in
+Welcome, JohnDoe123456!
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 2
+--- Your Profile ---
+Name: File Input
+University: University of South Florida
+Major: Computer Science
+Graduation Year: 2027
+About Me: Profile created entirely from input file.
+--------------------
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice:
+Logging out..

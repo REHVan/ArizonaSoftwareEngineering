@@ -1,0 +1,12 @@
+Log In
+JohnDoe123456
+tEstpass3@!
+1
+File
+Input
+University of South Florida
+Computer Science
+2027
+Profile created entirely from input file.
+DONE
+DONE

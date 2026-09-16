@@ -1,0 +1,26 @@
+Log In
+JohnDoe123456
+tEstpass3@!
+1
+Joanna
+Johnson
+University of South Florida
+Computer Science
+2027
+
+START
+Software Engineering Intern
+Tech Company
+Summer 2026
+Developed software applications.
+START
+Research Assistant
+USF
+Fall 2026
+Worked on health informatics research.
+START
+Data Analyst Intern
+Healthcare Company
+Spring 2026
+Analyzed healthcare data.
+DONE
