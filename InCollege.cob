@@ -1,4 +1,4 @@
-IDENTIFICATION DIVISION.
+       IDENTIFICATION DIVISION.
        PROGRAM-ID. InCollege.
        AUTHOR. Rafael Hernandez Vantuyl, Andy Ho, Steven Huynh.
        AUTHOR. Joanna Johnson, Lynberg Jean.
