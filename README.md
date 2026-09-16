@@ -66,3 +66,59 @@ Or run individual suites:
 | `tests/test_KAN31_37_menus.sh` | KAN-31, KAN-37 | Unexpected input timeout guard; Go Back stubs (activate when paragraphs are added) |
 | `tests/test_KAN24_persistence.sh` | KAN-24 | Output file survives between executions, run 1 vs run 2 content differs |
 | `test_dual_output.sh` | KAN-43 | Console stdout matches `InCollege-Output.txt` |
+
+---
+
+# Epic 2: User Profile Management
+
+## Profile Management
+
+After successfully logging in, users can create, edit and view their InCollege profile.
+
+If the user does not have a profile, the post-login menu displays:
+
+- `1. Create My Profile`
+- `2. View My Profile`
+
+If a profile already exists, option 1 changes to:
+
+- `1. Edit My Profile`
+
+## Creating or Editing a Profile
+
+The following profile information is required:
+
+- First Name
+- Last Name
+- University/College Attended
+- Major
+- Graduation Year
+
+The graduation year must be between 2026 and 2033.
+
+The following information is optional:
+
+- About Me
+- Up to 3 work experience entries
+- Up to 3 education entries
+
+Work experience entries include a title, company/organization, dates and an optional description.
+
+Education entries include a degree, university/college and years attended.
+
+Profile information is stored for each user so it can be accessed again after restarting the program.
+
+## Viewing a Profile
+
+Select `View My Profile` from the post-login menu to display the current user's saved profile.
+
+## Epic 2 Testing
+
+Epic 2 includes automated tests for profile editing, required-field validation, graduation-year validation, work experience limits, profile persistence and batch edge cases.
+
+Epic 2 test scripts and test input files are located in the `tests/` directory.
+
+The profile batch tests can be run with:
+
+```bash
+./run_profile_batch_tests.sh
