@@ -1,9 +1,9 @@
 Log In
-JohnDoe
-Secure@123!
-Edit Profile
+JohnDoe123456
+tEstpass3@!
+1
 John
 Doe
-Computer Science
 University of Arizona
+Computer Science
 ABCD

@@ -7,7 +7,7 @@
 
 set -uo pipefail
 
-BINARY="../InCollege"
+BINARY="./InCollege"
 INPUTS="tests/inputs"
 PASS=0
 FAIL=0

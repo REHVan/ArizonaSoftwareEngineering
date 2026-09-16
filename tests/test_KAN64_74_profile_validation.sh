@@ -7,7 +7,7 @@
 
 set -uo pipefail
 
-BINARY="../InCollege"
+BINARY="./InCollege"
 INPUTS="tests/inputs"
 PASS=0
 FAIL=0
@@ -70,13 +70,13 @@ run_test "KAN-74-01: blank required field displays error message" \
 # --- KAN-74: Non-numeric year shows error ---
 run_test "KAN-74-02: non-numeric graduation year displays error" \
     "$INPUTS/KAN74_nonnumeric_year.txt" \
-    "Invalid" \
+    "Graduation Year must be numeric" \
     ""
 
 # --- KAN-74: Out-of-range year shows error ---
 run_test "KAN-74-03: out-of-range graduation year displays error" \
     "$INPUTS/KAN74_outofrange_year.txt" \
-    "Invalid" \
+    "Invalid Year. Please enter a year in between 2026 and 2033." \
     ""
 
 # --- KAN-74: Invalid input does not corrupt profile ---

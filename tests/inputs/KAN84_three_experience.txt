@@ -1,19 +1,26 @@
 Log In
-JohnDoe
-Secure@123!
-Edit Profile
+JohnDoe123456
+tEstpass3@!
+1
 John
 Doe
-Computer Science
 University of Arizona
-2024
-3
+Computer Science
+2027
+
+START
 Software Engineer Intern
 Amazon
-Summer 2024
+Summer 2026
+
+START
 Junior Developer
 Startup Co
-Fall 2023
+Fall 2025
+
+START
 QA Tester
 Tech Corp
-Spring 2023
+Spring 2025
+
+DONE
