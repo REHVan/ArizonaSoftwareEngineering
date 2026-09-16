@@ -46,6 +46,7 @@
            01 PROFILE-RECORD PIC X(300).
           
        WORKING-STORAGE SECTION.
+           01 MAIN-CHOICE PIC X(1).
            01 ACCOUNTS-EOF     PIC X(1) VALUE 'N'.
            01 MENU-EOF         PIC X(1) VALUE 'N'.
            01 PROFILE-EOF      PIC X(1) VALUE 'N'.
@@ -138,46 +139,50 @@
            IF OUTPUT-NOT-FOUND THEN
                STOP RUN
            END-IF.
+           MOVE "Welcome to InCollege!" TO LOG-MSG
+           PERFORM WRITE-OUTPUT.
 
        MAIN.
       *    Title, will be presented again if num accounts > 5 AND
       *    if user tries to create 6th account
-           MOVE "Welcome to InCollege!" TO LOG-MSG
-           PERFORM WRITE-OUTPUT
-           MOVE "Log In" TO LOG-MSG
-           PERFORM WRITE-OUTPUT
-           MOVE "Create New Account." TO LOG-MSG
-           PERFORM WRITE-OUTPUT
+           MOVE 'N' TO MAIN-CHOICE.
+           PERFORM UNTIL MAIN-CHOICE = 'Y'
+               MOVE "Log In" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "Create New Account." TO LOG-MSG
+               PERFORM WRITE-OUTPUT
       *    Every read of the input file will have a checker for EOF
       *    Will terminate program and close files if EOF reached early
-           READ INPUT-FILE
-               AT END 
-                   MOVE "Input ended prematurely" TO LOG-MSG
-                   PERFORM WRITE-OUTPUT
-                   CLOSE INPUT-FILE OUTPUT-FILE
-                   STOP RUN.
+               READ INPUT-FILE
+                   AT END 
+                       MOVE "Input ended prematurely" TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                       CLOSE INPUT-FILE OUTPUT-FILE
+                       STOP RUN
+               END-READ
       *    Keeps choices and input on one line.
-           STRING "Enter your choice: " DELIMITED BY SIZE
-                   USER-INPUT DELIMITED BY SIZE
-             INTO STRING-MESSAGE
-           END-STRING.
-           MOVE STRING-MESSAGE TO LOG-MSG.
-           PERFORM WRITE-OUTPUT.
+               STRING "Enter your choice: " DELIMITED BY SIZE
+                       USER-INPUT DELIMITED BY SIZE
+                 INTO STRING-MESSAGE
+               END-STRING
+               MOVE STRING-MESSAGE TO LOG-MSG
+               PERFORM WRITE-OUTPUT
       *    Reset for use of one variable per time we have a selection
-           INITIALIZE STRING-MESSAGE.
+               INITIALIZE STRING-MESSAGE
       *    Jump to login or create new depending on user action
-           EVALUATE USER-INPUT
-               WHEN "Log In"
+               EVALUATE USER-INPUT
+                WHEN "Log In"
+                   MOVE 'Y' TO MAIN-CHOICE
                    PERFORM LOGIN
-               WHEN "Create New Account"
+                WHEN "Create New Account"
+                   MOVE 'Y' TO MAIN-CHOICE
                    PERFORM CREATE-ACCOUNT
-               WHEN OTHER
-                   MOVE "Unknown Option" TO LOG-MSG
+                WHEN OTHER
+                   MOVE "Unknown Option, Please select login or create n
+      -             "ew account." TO LOG-MSG
                    PERFORM WRITE-OUTPUT
-                   CLOSE INPUT-FILE
-                   CLOSE OUTPUT-FILE
-                   STOP RUN
-           END-EVALUATE.
+               END-EVALUATE
+           END-PERFORM.
 
        LOGIN.
       *    Opens existing accounts file and runs through the file
@@ -1124,9 +1129,6 @@
                WHEN NOT "Go Back"
                    MOVE "Unknown Option" TO LOG-MSG
                    PERFORM WRITE-OUTPUT
-                   CLOSE INPUT-FILE
-                   CLOSE OUTPUT-FILE
-                   STOP RUN
            END-EVALUATE.
                 
       *    Dual output - display to console AND write to file
