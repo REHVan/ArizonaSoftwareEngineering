@@ -6,43 +6,53 @@ Please enter your username: JohnDoe123456
 Please enter your password: tEstpass3@!
 You have successfully logged in
 Welcome, JohnDoe123456!
-1. Create My Profile
+1. Edit My Profile
 2. View My Profile
 3. Search for a job
 4. Find someone you know
 5. Learn a New Skill
 Enter your choice: 1
---- Create/Edit Profile ---
+--- Edit Profile ---
+Enter First Name: Joanna
+Enter Last Name: Johnson
+Enter University/College Attended: University of South Florida
+Enter Major: Computer Science
+Enter Graduation Year (YYYY): 2027
+Enter About Me (optional, max 200 chars, enter blank   line to skip): Computer Science student interested in health technology.
+Add Experience (optional, max 3 entries. Enter 'DO NE' to finish): START
+Experience #1 - Title: Software Engineering Intern
+Experience #1 - Company/Organization: Tech Company
+Experience #1 - Dates (e.g., Summer 2024): Summer 2026
+Experience #1 - Description (optional, max 100 chars, blank to skip): Developed software applications.
+Add Experience (optional, max 3 entries. Enter 'DO NE' to finish): DONE
+Add Education (optional, max 3 entries. Enter 'DON E' to finish): START
+Education #1 - Degree: Bachelor of Science in Computer Science
+Education #1 - University/College: University of South Florida
+Education #1 - Years Attended (e.g., 2023-2025): 2023-2027
+Add Education (optional, max 3 entries. Enter 'DON E' to finish): DONE
+Profile saved successfully!
 1. Edit My Profile
 2. View My Profile
 3. Search for a job
 4. Find someone you know
 5. Learn a New Skill
-Enter your choice: 3
-Job search is under construction.
-1. Edit My Profile
-2. View My Profile
-3. Search for a job
-4. Find someone you know
-5. Learn a New Skill
-Enter your choice: 5
-Learn a New Skill:
-Communication
-Coding
-Teamwork
-Leadership
-Critical Thinking
-Go Back
-Enter your choice: Coding
-Coding skill is under construction.
-Learn a New Skill:
-Communication
-Coding
-Teamwork
-Leadership
-Critical Thinking
-Go Back
-Enter your choice: Go Back
+Enter your choice: 2
+--- Your Profile ---
+Name: Joanna Johnson
+University: University of South Florida
+Major: Computer Science
+Graduation Year: 2027
+About Me: Computer Science student interested in health technology.
+Experience:
+ Title: Software Engineering Intern
+ Company: Tech Company
+ Dates: Summer 2026
+ Description: Developed software applications.
+Education:
+ Degree: Bachelor of Science in Computer Science
+ University: University of South Florida
+ Years: 2023-2027
+--------------------
 1. Edit My Profile
 2. View My Profile
 3. Search for a job

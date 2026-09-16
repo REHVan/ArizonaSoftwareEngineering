@@ -2,7 +2,21 @@ Log In
 JohnDoe123456
 tEstpass3@!
 1
-3
-5
-Coding
-Go Back
+Joanna
+Johnson
+University of South Florida
+Computer Science
+2027
+Computer Science student interested in health technology.
+START
+Software Engineering Intern
+Tech Company
+Summer 2026
+Developed software applications.
+DONE
+START
+Bachelor of Science in Computer Science
+University of South Florida
+2023-2027
+DONE
+2
