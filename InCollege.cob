@@ -21,8 +21,8 @@
       *    Existing accounts file
            SELECT ACCOUNTS-FILE
            ASSIGN TO "InCollege-Accounts.txt"
-           ORGANIZATION IS LINE SEQUENTIAL.
-
+           ORGANIZATION IS LINE SEQUENTIAL
+           FILE STATUS IS ACCOUNTS-FILE-STATUS.
            SELECT PROFILE-FILE
            ASSIGN TO USER-DATA
            ORGANIZATION IS LINE SEQUENTIAL
@@ -54,7 +54,8 @@
                88 INPUT-NOT-FOUND VALUE "35".
            01 OUTPUT-FILE-STATUS PIC XX.
                88 OUTPUT-NOT-FOUND VALUE "35".
-           
+           01 ACCOUNTS-FILE-STATUS PIC XX.
+               88 ACCOUNTS-FILE-NOT-FOUND VALUE "35".
            01 PROFILE-FILE-STATUS PIC XX.
                88 PROFILE-FOUND VALUE "00".
                88 PROFILE-NOT-FOUND VALUE "35".
@@ -130,6 +131,7 @@
            
            01 HAS-FILE PIC X(1) VALUE 'N'.
        PROCEDURE DIVISION.
+           CALL "CBL_CREATE_DIR" USING "user-data".   
       *    Open input and output files at the start
            OPEN INPUT INPUT-FILE
            IF INPUT-NOT-FOUND THEN
@@ -310,8 +312,7 @@
            MOVE NEW-USERNAME TO ACCOUNT-USER.
            MOVE SPACE TO ACCOUNT-SEPARATOR.
       *    username is unique, continueing adding account
-           OPEN EXTEND ACCOUNTS-FILE.
-
+           OPEN EXTEND ACCOUNTS-FILE
       *    REPEAT PASSWORD-VALIDATION UNTIL PASSWORD IS VALID
            MOVE 'N' TO IS-VALID.
            PERFORM UNTIL PASSWORD-VALID
@@ -463,8 +464,13 @@
 
            MOVE 'N' TO ACCOUNTS-EOF.
            MOVE 0 TO NUM-ACCOUNTS.
+           OPEN INPUT ACCOUNTS-FILE
 
       *    Adds 1 to NUM-ACCOUNTS per read
+           IF ACCOUNTS-FILE-NOT-FOUND
+               OPEN OUTPUT ACCOUNTS-FILE
+               CLOSE ACCOUNTS-FILE
+           END-IF.
            OPEN INPUT ACCOUNTS-FILE
            PERFORM UNTIL ACCOUNTS-EOF = 'Y'
                READ ACCOUNTS-FILE
@@ -611,7 +617,6 @@
       *            cut off unexpectedly
                    CLOSE PROFILE-FILE
                    OPEN OUTPUT PROFILE-FILE
-
                    CLOSE INPUT-FILE OUTPUT-FILE PROFILE-FILE
                    STOP RUN
                NOT AT END
