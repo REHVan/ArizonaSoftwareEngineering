@@ -778,11 +778,11 @@
                EVALUATE TRUE
                 WHEN FUNCTION TRIM (USER-INPUT) = "DONE"
                    MOVE 'Y' TO EXP-DONE
-                WHEN USER-INPUT = "ADD"
+                WHEN USER-INPUT = "START"
                    ADD 1 TO EXP-COUNT
                    PERFORM EXPERIENCE-ENTRY-INPUT
                 WHEN OTHER
-                   MOVE "Invalid Choice, Please enter ADD or DONE"
+                   MOVE "Invalid Choice, Please enter START or DONE"
                    TO LOG-MSG
                    PERFORM WRITE-OUTPUT
                END-EVALUATE
@@ -923,11 +923,11 @@
                EVALUATE TRUE
                 WHEN FUNCTION TRIM (USER-INPUT) = "DONE"
                    MOVE 'Y' TO EDU-DONE
-                WHEN FUNCTION TRIM(USER-INPUT) = "ADD"
+                WHEN FUNCTION TRIM(USER-INPUT) = "START"
                    ADD 1 TO EDU-COUNT
                    PERFORM EDUCATION-ENTRY-INPUT
                 WHEN OTHER
-                   MOVE "Invalid Choice, Please enter ADD or DONE"
+                   MOVE "Invalid Choice, Please enter START or DONE"
                    TO LOG-MSG
                    PERFORM WRITE-OUTPUT
                END-EVALUATE
