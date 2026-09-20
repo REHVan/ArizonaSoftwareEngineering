@@ -128,6 +128,15 @@
            01 PASSWORD-HAS-SPECIAL PIC X(1) VALUE 'N'.
            
            01 HAS-FILE PIC X(1) VALUE 'N'.
+      *    Basic user search state
+           01 SEARCH-NAME PIC X(200).
+           01 CANDIDATE-NAME PIC X(200).
+           01 FOUND-USER-NAME PIC X(200).
+           01 FOUND-USER-FILE PIC X(80).
+           01 SAVED-USER-DATA PIC X(80).
+           01 SEARCH-FOUND PIC X(1) VALUE 'N'.
+               88 SEARCH-FOUND-TRUE VALUE 'Y'.
+               88 SEARCH-FOUND-FALSE VALUE 'N'.
        PROCEDURE DIVISION.
       *    Open input and output files at the start
            OPEN INPUT INPUT-FILE
@@ -564,9 +573,7 @@
                    MOVE "Job search is under construction." TO LOG-MSG
                    PERFORM WRITE-OUTPUT
                WHEN "4"
-                   MOVE "Find someone you know is under construction." 
-                   TO LOG-MSG
-                   PERFORM WRITE-OUTPUT
+                   PERFORM FIND-SOMEONE
                WHEN "5"
                    PERFORM SKILL-MENU
                WHEN OTHER
@@ -1043,6 +1050,124 @@
                    CLOSE OUTPUT-FILE
                    STOP RUN
            END-EVALUATE.
+
+       FIND-SOMEONE.
+      *    Asks for a full name and shows that user's profile, or
+      *    reports that nobody was found
+           READ INPUT-FILE
+               AT END
+                   MOVE "Input ended prematurely" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   CLOSE INPUT-FILE OUTPUT-FILE
+                   STOP RUN
+               NOT AT END
+                   MOVE USER-INPUT TO SEARCH-NAME
+      *    SIZE and not SPACE, so the whole name stays on the line
+                   INITIALIZE STRING-MESSAGE
+                   STRING "Enter the full name of the person you are "
+                           DELIMITED BY SIZE
+                           "looking for: " DELIMITED BY SIZE
+                           USER-INPUT DELIMITED BY SIZE
+                     INTO STRING-MESSAGE
+                   END-STRING
+                   MOVE STRING-MESSAGE TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   INITIALIZE STRING-MESSAGE
+           END-READ.
+           PERFORM SEARCH-USERS.
+           IF SEARCH-FOUND-TRUE
+               PERFORM DISPLAY-FOUND-PROFILE
+           ELSE
+               MOVE "No one by that name could be found." TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+           END-IF.
+      *    Returning from here reprints the menu in MENU-SELECT
+
+       SEARCH-USERS.
+      *    Checks every stored account for a profile name that matches
+           SET SEARCH-FOUND-FALSE TO TRUE.
+           MOVE SPACES TO FOUND-USER-FILE.
+           MOVE SPACES TO FOUND-USER-NAME.
+      *    The scan reuses USER-DATA, so the real one is put back after
+           MOVE USER-DATA TO SAVED-USER-DATA.
+           MOVE 'N' TO ACCOUNTS-EOF.
+           OPEN INPUT ACCOUNTS-FILE.
+           PERFORM UNTIL ACCOUNTS-EOF = 'Y' OR SEARCH-FOUND-TRUE
+               READ ACCOUNTS-FILE
+                   AT END
+                       MOVE 'Y' TO ACCOUNTS-EOF
+                   NOT AT END
+                       PERFORM MATCH-ACCOUNT-NAME
+               END-READ
+           END-PERFORM.
+           CLOSE ACCOUNTS-FILE.
+           MOVE SAVED-USER-DATA TO USER-DATA.
+
+       MATCH-ACCOUNT-NAME.
+      *    Reads one account's profile and compares its Name line
+           INITIALIZE USER-DATA.
+           STRING "user-data/" DELIMITED BY SIZE
+                   FUNCTION TRIM(ACCOUNT-USER) DELIMITED BY SIZE
+                   ".txt" DELIMITED BY SIZE
+             INTO USER-DATA
+           END-STRING.
+           OPEN INPUT PROFILE-FILE.
+      *    An account with no profile yet has no file to read
+           IF PROFILE-FILE-STATUS = "35"
+               CLOSE PROFILE-FILE
+               EXIT PARAGRAPH
+           END-IF.
+           MOVE 'N' TO PROFILE-EOF.
+           PERFORM UNTIL PROFILE-EOF = 'Y' OR SEARCH-FOUND-TRUE
+               READ PROFILE-FILE
+                   AT END
+                       MOVE 'Y' TO PROFILE-EOF
+                   NOT AT END
+      *    The line is "Name: First Last", so the name starts at 7
+                       IF PROFILE-RECORD(1:6) = "Name: "
+                           MOVE PROFILE-RECORD(7:200)
+                               TO CANDIDATE-NAME
+      *    Exact match, only the surrounding blanks are ignored
+                           IF FUNCTION TRIM(CANDIDATE-NAME) =
+                               FUNCTION TRIM(SEARCH-NAME)
+                               SET SEARCH-FOUND-TRUE TO TRUE
+                               MOVE USER-DATA TO FOUND-USER-FILE
+                               MOVE CANDIDATE-NAME TO FOUND-USER-NAME
+                           END-IF
+                       END-IF
+               END-READ
+           END-PERFORM.
+           CLOSE PROFILE-FILE.
+
+       DISPLAY-FOUND-PROFILE.
+      *    Displays every line stored in the matched user's profile
+           MOVE USER-DATA TO SAVED-USER-DATA.
+           MOVE FOUND-USER-FILE TO USER-DATA.
+           MOVE "--- Found User Profile ---" TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           INITIALIZE STRING-MESSAGE.
+           STRING "==== Profile for " DELIMITED BY SIZE
+                   FUNCTION TRIM(FOUND-USER-NAME) DELIMITED BY SIZE
+             INTO STRING-MESSAGE
+           END-STRING.
+           MOVE STRING-MESSAGE TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           INITIALIZE STRING-MESSAGE.
+           MOVE 'N' TO PROFILE-EOF.
+           OPEN INPUT PROFILE-FILE.
+           PERFORM UNTIL PROFILE-EOF = 'Y'
+               READ PROFILE-FILE
+                   AT END
+                       MOVE 'Y' TO PROFILE-EOF
+                   NOT AT END
+                       MOVE PROFILE-RECORD TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+               END-READ
+           END-PERFORM.
+           CLOSE PROFILE-FILE.
+           MOVE "-------------------------" TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           MOVE SAVED-USER-DATA TO USER-DATA.
                 
       *    Dual output - display to console AND write to file
       *    The file WRITE drops trailing spaces, so DISPLAY
