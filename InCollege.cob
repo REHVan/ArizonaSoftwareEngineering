@@ -939,7 +939,9 @@
            END-PERFORM.
 
        VIEW-PROFILE.
-      *    Displays every line stored in the user's profile file
+      *    Retrieve and display all saved profile fields from the
+      *    logged-in user's profile file, including name, university,
+      *    major, graduation year, about me, experience, and education
 
       *    First checks if user tries to open a folder that does
       *    not exist
