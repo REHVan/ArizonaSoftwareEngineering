@@ -963,11 +963,25 @@
                    PERFORM WRITE-OUTPUT
                    EXIT PARAGRAPH
            END-READ.
+
+      *    Save the first profile record, which contains "Name: "
+      *    followed by the user's first and last name
+           MOVE PROFILE-RECORD TO PROFILE-STRING
            CLOSE PROFILE-FILE
 
            MOVE "--- Your Profile ---" TO LOG-MSG
            PERFORM WRITE-OUTPUT.
+
+           INITIALIZE STRING-MESSAGE
+           STRING "==== Profile for " DELIMITED BY SIZE
+                  PROFILE-STRING(7:) DELIMITED BY SIZE
+             INTO STRING-MESSAGE
+           END-STRING
+           MOVE STRING-MESSAGE TO LOG-MSG
+           PERFORM WRITE-OUTPUT
+
            OPEN INPUT PROFILE-FILE.
+
            PERFORM UNTIL PROFILE-EOF = 'Y'
                READ PROFILE-FILE
                    AT END
