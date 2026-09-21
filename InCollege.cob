@@ -522,6 +522,8 @@
                PERFORM WRITE-OUTPUT
                MOVE "5. Learn a New Skill" TO LOG-MSG
                PERFORM WRITE-OUTPUT
+      *    All menu selections, including profile viewing, are read
+      *    from the designated input file rather than keyboard input
                READ INPUT-FILE
                AT END
       *    Input running out here is a normal exit, so show the prompt
