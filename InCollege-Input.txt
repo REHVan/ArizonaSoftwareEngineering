@@ -2,21 +2,23 @@ Log In
 JohnDoe123456
 tEstpass3@!
 1
-Joanna
-Johnson
-University of South Florida
+John
+Doe
+State University
 Computer Science
 2027
-Computer Science student interested in health technology.
+Interested in software development.
 START
 Software Engineering Intern
-Tech Company
+Tech Solutions
 Summer 2026
 Developed software applications.
 DONE
 START
 Bachelor of Science in Computer Science
-University of South Florida
+State University
 2023-2027
 DONE
 2
+4
+John Doe
