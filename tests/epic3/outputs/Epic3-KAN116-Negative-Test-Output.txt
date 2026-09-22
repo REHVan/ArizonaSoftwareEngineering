@@ -1,0 +1,23 @@
+Welcome to InCollege!
+Log In
+Create New Account.
+Enter your choice: Log In
+Please enter your username: aho37@usf.edu
+Please enter your password: andyhO23!
+You have successfully logged in
+Welcome, aho37@usf.edu!
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 4
+Enter the full name of the person you are looking for: AndyHo
+No one by that name could be found.
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice:
+Logging out..

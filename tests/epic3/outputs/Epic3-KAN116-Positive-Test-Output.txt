@@ -1,0 +1,100 @@
+Welcome to InCollege!
+Log In
+Create New Account.
+Enter your choice: Log In
+Please enter your username: aho37@usf.edu
+Please enter your password: andyhO23!
+You have successfully logged in
+Welcome, aho37@usf.edu!
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 1
+--- Edit Profile ---
+Enter First Name: Andy
+Enter Last Name: Ho
+Enter University/College Attended: University of South Florida
+Enter Major: Computer Science
+Enter Graduation Year (YYYY): 2030
+Enter About Me (optional, max 200 chars, enter blank   line to skip): Computer Science Student that wishes to gain experience for workforce
+Add Experience (optional, max 3 entries. Enter 'DO NE' to finish): START
+Experience #1 - Title: Front Office
+Experience #1 - Company/Organization: Podiatry
+Experience #1 - Dates (e.g., Summer 2024): February 2024 - January 2025
+Experience #1 - Description (optional, max 100 chars, blank to skip): Managed front office
+Add Experience (optional, max 3 entries. Enter 'DO NE' to finish): DONE
+Add Education (optional, max 3 entries. Enter 'DON E' to finish): START
+Education #1 - Degree: Associates in Arts
+Education #1 - University/College: St. Petersburg College
+Education #1 - Years Attended (e.g., 2023-2025): 2020-2023
+Add Education (optional, max 3 entries. Enter 'DON E' to finish): DONE
+Profile saved successfully!
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 2
+--- Your Profile ---
+Name: Andy Ho
+University: University of South Florida
+Major: Computer Science
+Graduation Year: 2030
+About Me: Computer Science Student that wishes to gain experience for workforce
+Experience:
+ Title: Front Office
+ Company: Podiatry
+ Dates: February 2024 - January 2025
+ Description: Managed front office
+Education:
+ Degree: Associates in Arts
+ University: St. Petersburg College
+ Years: 2020-2023
+--------------------
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 4
+Enter the full name of the person you are looking for: Test User
+--- Found User Profile ---
+==== Profile for Test User
+Name: Test User
+University: University of South Florida
+Major: Computer Science
+Graduation Year: 2030
+About Me: Computer Science student that wants to develop video games
+Experience:
+ Title: Software Engineering Intern
+ Company: Tech Company
+ Dates: Summer 2026
+ Description: Developed software applications.
+ Title: Test experience
+ Company: Test location
+ Dates: Test years
+ Description: Test description
+ Title: Random experience
+ Company: Random location
+ Dates: Random year
+ Description: Random description
+Education:
+ Degree: Bachelor of Science in Computer Science
+ University: University of South Florida
+ Years: 2019-2020
+ Degree: Associates in Testing
+ University: Testing College
+ Years: Testing years
+ Degree: Random degreee
+ University: Random college
+ Years: Random years
+-------------------------
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice:
+Logging out..
