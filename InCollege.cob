@@ -776,6 +776,9 @@
            END-PERFORM.
            IF EXP-COUNT > 0
                PERFORM WRITE-EXPERIENCE
+           ELSE
+               MOVE "Experience: None" TO PROFILE-LOG
+               PERFORM WRITE-PROFILE
            END-IF.
 
        EXPERIENCE-ENTRY-INPUT.
@@ -882,6 +885,9 @@
            END-PERFORM.
            IF EDU-COUNT > 0
                PERFORM WRITE-EDUCATION
+           ELSE
+               MOVE "Education: None" TO PROFILE-LOG
+               PERFORM WRITE-PROFILE
            END-IF.
 
        EDUCATION-ENTRY-INPUT.
