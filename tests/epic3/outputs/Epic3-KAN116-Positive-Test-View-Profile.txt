@@ -1,0 +1,38 @@
+Welcome to InCollege!
+Log In
+Create New Account.
+Enter your choice: Log In
+Please enter your username: aho37@usf.edu
+Please enter your password: andyhO23!
+You have successfully logged in
+Welcome, aho37@usf.edu!
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 2
+--- Your Profile ---
+==== Profile for Andy Ho
+Name: Andy Ho
+University: University of South Florida
+Major: Computer Science
+Graduation Year: 2030
+About Me: Computer Science Student that wishes to gain experience for workforce
+Experience:
+ Title: Front Office
+ Company: Podiatry
+ Dates: February 2024 - January 2025
+ Description: Managed front office
+Education:
+ Degree: Associates in Arts
+ University: St. Petersburg College
+ Years: 2020-2023
+--------------------
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice:
+Logging out..

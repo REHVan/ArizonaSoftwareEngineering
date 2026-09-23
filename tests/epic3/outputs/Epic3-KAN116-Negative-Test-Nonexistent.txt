@@ -1,0 +1,85 @@
+Welcome to InCollege!
+Log In
+Create New Account.
+Enter your choice: Log In
+Please enter your username: aho37@usf.edu
+Please enter your password: andyhO23!
+You have successfully logged in
+Welcome, aho37@usf.edu!
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 4
+Enter the full name of the person you are looking for: Joanna Johnson
+No one by that name could be found.
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 4
+Enter the full name of the person you are looking for: Steven Huynh
+No one by that name could be found.
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 4
+Enter the full name of the person you are looking for: Rafael Hernandez
+No one by that name could be found.
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 4
+Enter the full name of the person you are looking for: Lynberg Jean
+No one by that name could be found.
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 4
+Enter the full name of the person you are looking for: Test User
+--- Found User Profile ---
+==== Profile for Test User
+Name: Test User
+University: University of South Florida
+Major: Computer Science
+Graduation Year: 2030
+About Me: Computer Science student that wants to develop video games
+Experience:
+ Title: Software Engineering Intern
+ Company: Tech Company
+ Dates: Summer 2026
+ Description: Developed software applications.
+ Title: Test experience
+ Company: Test location
+ Dates: Test years
+ Description: Test description
+ Title: Random experience
+ Company: Random location
+ Dates: Random year
+ Description: Random description
+Education:
+ Degree: Bachelor of Science in Computer Science
+ University: University of South Florida
+ Years: 2019-2020
+ Degree: Associates in Testing
+ University: Testing College
+ Years: Testing years
+ Degree: Random degreee
+ University: Random college
+ Years: Random years
+-------------------------
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice:
+Logging out..

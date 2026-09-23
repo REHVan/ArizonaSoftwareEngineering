@@ -1,0 +1,52 @@
+Welcome to InCollege!
+Log In
+Create New Account.
+Enter your choice: Log In
+Please enter your username: aho37@usf.edu
+Please enter your password: andyhO23!
+You have successfully logged in
+Welcome, aho37@usf.edu!
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 4
+Enter the full name of the person you are looking for: 'Test User'
+No one by that name could be found.
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 4
+Enter the full name of the person you are looking for: Test'User'
+No one by that name could be found.
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice: 4
+Enter the full name of the person you are looking for: T'est U'ser'
+--- Found User Profile ---
+==== Profile for T'est U'ser'
+Name: T'est U'ser'
+University: Quote University
+Major: Quote Major
+Graduation Year: 2030
+About Me: My name has a quote in it
+Experience:
+ Title: Quote Master
+ Company: Quote Academy
+ Dates: 2010-2015
+ Description: Master of Quotes
+Education: None
+-------------------------
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+Enter your choice:
+Logging out..
