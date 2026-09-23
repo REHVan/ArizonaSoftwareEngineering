@@ -1,0 +1,14 @@
+Name: John Doe
+University: State University
+Major: Computer Science
+Graduation Year: 2027
+About Me: Interested in software development.
+Experience:
+ Title: Software Engineering Intern
+ Company: Tech Solutions
+ Dates: Summer 2026
+ Description: Developed software applications.
+Education:
+ Degree: Bachelor of Science in Computer Science
+ University: State University
+ Years: 2023-2027
