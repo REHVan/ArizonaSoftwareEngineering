@@ -27,6 +27,13 @@
            ASSIGN TO USER-DATA
            ORGANIZATION IS LINE SEQUENTIAL
            FILE STATUS IS PROFILE-FILE-STATUS.
+
+      *    Persistent storage for pending connection requests
+           SELECT PENDING-REQUEST-FILE
+           ASSIGN TO "Pending-Connections.txt"
+           ORGANIZATION IS LINE SEQUENTIAL
+           FILE STATUS IS PENDING-REQUEST-FILE-STATUS.
+
        DATA DIVISION.
       *    File descriptions for input output and existing account files
        FILE SECTION.
@@ -44,6 +51,8 @@
                05 ACCOUNT-PASS PIC X(12).
        FD PROFILE-FILE.
            01 PROFILE-RECORD PIC X(300).
+       FD PENDING-REQUEST-FILE.
+           01 PENDING-REQUEST-FILE-RECORD PIC X(160).
           
        WORKING-STORAGE SECTION.
            COPY "ViewRequests.cob".
@@ -58,6 +67,9 @@
            01 PROFILE-FILE-STATUS PIC XX.
                88 PROFILE-FOUND VALUE "00".
                88 PROFILE-NOT-FOUND VALUE "35".
+           01 PENDING-REQUEST-FILE-STATUS PIC XX.
+               88 PENDING-REQUEST-FILE-OK VALUE "00".
+               88 PENDING-REQUEST-FILE-NOT-FOUND VALUE "35".
            01 USER-DATA PIC X(80).
       *    Login Validation flags
            01 LOGIN-STATUS PIC X(1) VALUE 'N'.
@@ -1206,4 +1218,4 @@
            MOVE FUNCTION TRIM(PROFILE-LOG TRAILING)
                TO PROFILE-RECORD
            WRITE PROFILE-RECORD.
-           
+           
