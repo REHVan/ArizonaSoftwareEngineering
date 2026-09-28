@@ -1237,4 +1237,5 @@
            MOVE FUNCTION TRIM(PROFILE-LOG TRAILING)
                TO PROFILE-RECORD
            WRITE PROFILE-RECORD.
+           COPY "SendRequest.cob".
            
