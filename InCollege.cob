@@ -147,6 +147,7 @@
            01 FOUND-USER-NAME PIC X(200).
            01 FOUND-USER-FILE PIC X(80).
            01 SAVED-USER-DATA PIC X(80).
+           01 CONNECTION-CHOICE PIC X(1).
            01 SEARCH-FOUND PIC X(1) VALUE 'N'.
                88 SEARCH-FOUND-TRUE VALUE 'Y'.
                88 SEARCH-FOUND-FALSE VALUE 'N'.
@@ -1204,6 +1205,24 @@
            CLOSE PROFILE-FILE.
            MOVE "-------------------------" TO LOG-MSG.
            PERFORM WRITE-OUTPUT.
+
+           MOVE "1. Send Connection Request" TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           MOVE "2. Back to Main Menu" TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           MOVE "Enter your choice:" TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+
+           READ INPUT-FILE
+               AT END
+                   MOVE "2" TO CONNECTION-CHOICE
+               NOT AT END
+                   MOVE FUNCTION TRIM(USER-INPUT)
+                       TO CONNECTION-CHOICE
+                   MOVE FUNCTION TRIM(USER-INPUT) TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+           END-READ.
+
            MOVE SAVED-USER-DATA TO USER-DATA.
                 
       *    Dual output - display to console AND write to file
@@ -1218,4 +1237,4 @@
            MOVE FUNCTION TRIM(PROFILE-LOG TRAILING)
                TO PROFILE-RECORD
            WRITE PROFILE-RECORD.
-           
+           
