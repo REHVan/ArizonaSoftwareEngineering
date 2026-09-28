@@ -1,6 +1,64 @@
       * Send Connection Request copybook
-      * Contains the procedure for processing a connection request
+      * Validates and stores pending connection requests
 
        SEND-CONNECTION-REQUEST.
-      *    Request validation and storage will be implemented in KAN-160
-           CONTINUE.
+           SET REVERSE-REQUEST-NOT-FOUND TO TRUE.
+           MOVE 'N' TO PENDING-REQUEST-EOF.
+
+           OPEN INPUT PENDING-REQUEST-FILE.
+
+      *    A missing file means there are no pending requests yet
+           IF PENDING-REQUEST-FILE-NOT-FOUND
+               SET REVERSE-REQUEST-NOT-FOUND TO TRUE
+           ELSE
+               PERFORM UNTIL PENDING-REQUEST-EOF = 'Y'
+                   READ PENDING-REQUEST-FILE
+                       AT END
+                           MOVE 'Y' TO PENDING-REQUEST-EOF
+                       NOT AT END
+                           MOVE PENDING-REQUEST-FILE-RECORD
+                               TO PENDING-REQUEST-RECORD
+
+                           IF FUNCTION TRIM(REQUEST-SENDER) =
+                               FUNCTION TRIM(FOUND-USER-USERNAME)
+                               AND FUNCTION TRIM(REQUEST-RECIPIENT) =
+                               FUNCTION TRIM(USER-NAME)
+                               SET REVERSE-REQUEST-EXISTS TO TRUE
+                               MOVE 'Y' TO PENDING-REQUEST-EOF
+                           END-IF
+                   END-READ
+               END-PERFORM
+
+               CLOSE PENDING-REQUEST-FILE
+           END-IF.
+
+           IF REVERSE-REQUEST-EXISTS
+               MOVE "This user already sent you a pending request."
+                   TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+           ELSE
+               MOVE USER-NAME TO REQUEST-SENDER
+               MOVE FOUND-USER-USERNAME TO REQUEST-RECIPIENT
+               MOVE PENDING-REQUEST-RECORD
+                   TO PENDING-REQUEST-FILE-RECORD
+
+               IF PENDING-REQUEST-FILE-NOT-FOUND
+                   OPEN OUTPUT PENDING-REQUEST-FILE
+               ELSE
+                   OPEN EXTEND PENDING-REQUEST-FILE
+               END-IF
+
+               WRITE PENDING-REQUEST-FILE-RECORD
+               CLOSE PENDING-REQUEST-FILE
+
+               INITIALIZE STRING-MESSAGE
+               STRING "Connection request sent to "
+                   DELIMITED BY SIZE
+                   FUNCTION TRIM(FOUND-USER-NAME)
+                   DELIMITED BY SIZE
+                   "." DELIMITED BY SIZE
+                   INTO STRING-MESSAGE
+               END-STRING
+               MOVE STRING-MESSAGE TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+           END-IF.

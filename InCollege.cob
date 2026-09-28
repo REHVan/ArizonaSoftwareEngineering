@@ -145,9 +145,14 @@
            01 SEARCH-NAME PIC X(200).
            01 CANDIDATE-NAME PIC X(200).
            01 FOUND-USER-NAME PIC X(200).
+           01 FOUND-USER-USERNAME PIC X(80).
            01 FOUND-USER-FILE PIC X(80).
            01 SAVED-USER-DATA PIC X(80).
            01 CONNECTION-CHOICE PIC X(1).
+           01 PENDING-REQUEST-EOF PIC X(1) VALUE 'N'.
+           01 REVERSE-REQUEST-FOUND PIC X(1) VALUE 'N'.
+               88 REVERSE-REQUEST-EXISTS VALUE 'Y'.
+               88 REVERSE-REQUEST-NOT-FOUND VALUE 'N'.
            01 SEARCH-FOUND PIC X(1) VALUE 'N'.
                88 SEARCH-FOUND-TRUE VALUE 'Y'.
                88 SEARCH-FOUND-FALSE VALUE 'N'.
@@ -1126,6 +1131,7 @@
            SET SEARCH-FOUND-FALSE TO TRUE.
            MOVE SPACES TO FOUND-USER-FILE.
            MOVE SPACES TO FOUND-USER-NAME.
+           MOVE SPACES TO FOUND-USER-USERNAME.
       *    The scan reuses USER-DATA, so the real one is put back after
            MOVE USER-DATA TO SAVED-USER-DATA.
            MOVE 'N' TO ACCOUNTS-EOF.
@@ -1171,6 +1177,8 @@
                                SET SEARCH-FOUND-TRUE TO TRUE
                                MOVE USER-DATA TO FOUND-USER-FILE
                                MOVE CANDIDATE-NAME TO FOUND-USER-NAME
+                               MOVE ACCOUNT-USER
+                                   TO FOUND-USER-USERNAME
                            END-IF
                        END-IF
                END-READ
@@ -1222,6 +1230,10 @@
                    MOVE FUNCTION TRIM(USER-INPUT) TO LOG-MSG
                    PERFORM WRITE-OUTPUT
            END-READ.
+
+           IF CONNECTION-CHOICE = "1"
+               PERFORM SEND-CONNECTION-REQUEST
+           END-IF.
 
            MOVE SAVED-USER-DATA TO USER-DATA.
                 
