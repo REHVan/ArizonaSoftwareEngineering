@@ -46,6 +46,7 @@
            01 PROFILE-RECORD PIC X(300).
           
        WORKING-STORAGE SECTION.
+           COPY "ViewRequests.cob".
            01 ACCOUNTS-EOF     PIC X(1) VALUE 'N'.
            01 MENU-EOF         PIC X(1) VALUE 'N'.
            01 PROFILE-EOF      PIC X(1) VALUE 'N'.
