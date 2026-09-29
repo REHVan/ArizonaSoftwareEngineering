@@ -18,6 +18,7 @@ SUITES=(
     "tests/test_KAN31_37_menus.sh"
     "tests/test_KAN24_persistence.sh"
     "test_dual_output.sh"
+    "tests/test_KAN135_139_connections.sh"
 )
 
 OVERALL=0
