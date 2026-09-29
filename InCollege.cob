@@ -27,6 +27,11 @@
            ASSIGN TO USER-DATA
            ORGANIZATION IS LINE SEQUENTIAL
            FILE STATUS IS PROFILE-FILE-STATUS.
+
+           SELECT CONN-FILE
+           ASSIGN TO CONN-DATA
+           ORGANIZATION IS LINE SEQUENTIAL
+           FILE STATUS IS CONN-FILE-STATUS.
        DATA DIVISION.
       *    File descriptions for input output and existing account files
        FILE SECTION.
@@ -44,6 +49,9 @@
                05 ACCOUNT-PASS PIC X(12).
        FD PROFILE-FILE.
            01 PROFILE-RECORD PIC X(300).
+
+       FD CONN-FILE.
+           01 CONN-RECORD PIC X(100).
           
        WORKING-STORAGE SECTION.
            01 ACCOUNTS-EOF     PIC X(1) VALUE 'N'.
@@ -128,6 +136,16 @@
            01 PASSWORD-HAS-SPECIAL PIC X(1) VALUE 'N'.
            
            01 HAS-FILE PIC X(1) VALUE 'N'.
+           01 CONN-DATA PIC X(80).
+           01 CONN-FILE-STATUS PIC XX.
+           01 CONN-EOF PIC X(1) VALUE 'N'.
+           01 CONN-TARGET PIC X(80).
+           01 CONN-ALREADY PIC X(1) VALUE 'N'.
+           01 CONN-PENDING PIC X(1) VALUE 'N'.
+           01 CONN-LINE PIC X(100).
+           01 CONN-TYPE PIC X(20).
+           01 CONN-USER PIC X(80).
+           01 CONN-FOUND-ANY PIC X(1) VALUE 'N'.
        PROCEDURE DIVISION.
       *    Open input and output files at the start
            OPEN INPUT INPUT-FILE
@@ -494,7 +512,11 @@
                   ".txt" DELIMITED BY SIZE
              INTO USER-DATA
            END-STRING.
-           MOVE USER-DATA TO LOG-MSG
+           STRING "user-data/" DELIMITED BY SIZE
+                   USER-NAME DELIMITED BY SPACE
+                  "-connections.txt" DELIMITED BY SIZE
+             INTO CONN-DATA
+           END-STRING.
            PERFORM MENU-SELECT.
       
        MENU-SELECT.
@@ -521,6 +543,8 @@
                MOVE "4. Find someone you know" TO LOG-MSG
                PERFORM WRITE-OUTPUT
                MOVE "5. Learn a New Skill" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "6. View Pending Requests" TO LOG-MSG
                PERFORM WRITE-OUTPUT
                READ INPUT-FILE
                AT END
@@ -564,11 +588,11 @@
                    MOVE "Job search is under construction." TO LOG-MSG
                    PERFORM WRITE-OUTPUT
                WHEN "4"
-                   MOVE "Find someone you know is under construction." 
-                   TO LOG-MSG
-                   PERFORM WRITE-OUTPUT
+                   PERFORM FIND-SOMEONE
                WHEN "5"
                    PERFORM SKILL-MENU
+               WHEN "6"
+                   PERFORM VIEW-PENDING-REQUESTS
                WHEN OTHER
                    MOVE "Unknown Option" TO LOG-MSG
                    PERFORM WRITE-OUTPUT
@@ -937,6 +961,166 @@
                END-STRING
                PERFORM WRITE-PROFILE
            END-PERFORM.
+
+       FIND-SOMEONE.
+      *    Prompt for a username to connect with, then check:
+      *    1. Target exists in accounts
+      *    2. Not already connected (KAN-135)
+      *    3. Target has not already sent us a request (KAN-136)
+      *    If all clear, append PENDING-SENT to our file and
+      *    PENDING-RECV to their file (KAN-137)
+           READ INPUT-FILE
+               AT END
+                   MOVE "Input ended prematurely" TO LOG-MSG
+                   PERFORM WRITE-OUTPUT
+                   CLOSE INPUT-FILE OUTPUT-FILE
+                   STOP RUN
+           END-READ.
+           MOVE "Enter username to connect with:" TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           MOVE FUNCTION TRIM(USER-INPUT) TO CONN-TARGET.
+
+      *    Check target exists in accounts
+           MOVE 'N' TO ACCOUNTS-EOF.
+           MOVE 'N' TO USERNAME-STATUS.
+           OPEN INPUT ACCOUNTS-FILE.
+           PERFORM UNTIL ACCOUNTS-EOF = 'Y'
+               READ ACCOUNTS-FILE
+                   AT END MOVE 'Y' TO ACCOUNTS-EOF
+                   NOT AT END
+                       IF FUNCTION TRIM(ACCOUNT-USER) =
+                          FUNCTION TRIM(CONN-TARGET)
+                           MOVE 'Y' TO USERNAME-STATUS
+                       END-IF
+               END-READ
+           END-PERFORM.
+           CLOSE ACCOUNTS-FILE.
+
+           IF USERNAME-STATUS = 'N'
+               MOVE "User not found." TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               EXIT PARAGRAPH
+           END-IF.
+
+      *    Scan our own connections file for duplicates
+           MOVE 'N' TO CONN-ALREADY.
+           MOVE 'N' TO CONN-PENDING.
+           MOVE 'N' TO CONN-EOF.
+           OPEN INPUT CONN-FILE.
+           IF CONN-FILE-STATUS NOT = "00"
+               CLOSE CONN-FILE
+               GO TO FIND-SEND
+           END-IF.
+           PERFORM UNTIL CONN-EOF = 'Y'
+               READ CONN-FILE
+                   AT END MOVE 'Y' TO CONN-EOF
+                   NOT AT END
+                       UNSTRING CONN-RECORD DELIMITED BY ":"
+                           INTO CONN-TYPE CONN-USER
+                       END-UNSTRING
+                       IF FUNCTION TRIM(CONN-USER) =
+                          FUNCTION TRIM(CONN-TARGET)
+                           IF FUNCTION TRIM(CONN-TYPE) = "CONNECTED"
+                               MOVE 'Y' TO CONN-ALREADY
+                           END-IF
+                           IF FUNCTION TRIM(CONN-TYPE) =
+                              "PENDING-RECV"
+                               MOVE 'Y' TO CONN-PENDING
+                           END-IF
+                       END-IF
+               END-READ
+           END-PERFORM.
+           CLOSE CONN-FILE.
+
+           IF CONN-ALREADY = 'Y'
+               MOVE "You are already connected with this user."
+               TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               EXIT PARAGRAPH
+           END-IF.
+
+           IF CONN-PENDING = 'Y'
+               MOVE "This user has already sent you a request."
+               TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               EXIT PARAGRAPH
+           END-IF.
+
+       FIND-SEND.
+      *    Append PENDING-SENT to our file
+           OPEN EXTEND CONN-FILE.
+           INITIALIZE CONN-RECORD.
+           STRING "PENDING-SENT:" DELIMITED BY SIZE
+                   FUNCTION TRIM(CONN-TARGET) DELIMITED BY SIZE
+             INTO CONN-RECORD
+           END-STRING.
+           WRITE CONN-RECORD.
+           CLOSE CONN-FILE.
+
+      *    Append PENDING-RECV to target's file
+           INITIALIZE CONN-DATA.
+           STRING "user-data/" DELIMITED BY SIZE
+                   FUNCTION TRIM(CONN-TARGET) DELIMITED BY SIZE
+                  "-connections.txt" DELIMITED BY SIZE
+             INTO CONN-DATA
+           END-STRING.
+           OPEN EXTEND CONN-FILE.
+           INITIALIZE CONN-RECORD.
+           STRING "PENDING-RECV:" DELIMITED BY SIZE
+                   FUNCTION TRIM(USER-NAME) DELIMITED BY SIZE
+             INTO CONN-RECORD
+           END-STRING.
+           WRITE CONN-RECORD.
+           CLOSE CONN-FILE.
+
+      *    Restore CONN-DATA to current user
+           INITIALIZE CONN-DATA.
+           STRING "user-data/" DELIMITED BY SIZE
+                   USER-NAME DELIMITED BY SPACE
+                  "-connections.txt" DELIMITED BY SIZE
+             INTO CONN-DATA
+           END-STRING.
+
+           MOVE "Connection request sent!" TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+
+       VIEW-PENDING-REQUESTS.
+      *    Read our connections file and display all PENDING-RECV lines
+           MOVE 'N' TO CONN-EOF.
+           MOVE 'N' TO CONN-FOUND-ANY.
+           OPEN INPUT CONN-FILE.
+           IF CONN-FILE-STATUS NOT = "00"
+               CLOSE CONN-FILE
+               MOVE "No pending requests." TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               EXIT PARAGRAPH
+           END-IF.
+           MOVE "--- Pending Connection Requests ---" TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           PERFORM UNTIL CONN-EOF = 'Y'
+               READ CONN-FILE
+                   AT END MOVE 'Y' TO CONN-EOF
+                   NOT AT END
+                       UNSTRING CONN-RECORD DELIMITED BY ":"
+                           INTO CONN-TYPE CONN-USER
+                       END-UNSTRING
+                       IF FUNCTION TRIM(CONN-TYPE) = "PENDING-RECV"
+                           MOVE 'Y' TO CONN-FOUND-ANY
+                           INITIALIZE LOG-MSG
+                           STRING "Request from: " DELIMITED BY SIZE
+                                   FUNCTION TRIM(CONN-USER)
+                                   DELIMITED BY SIZE
+                             INTO LOG-MSG
+                           END-STRING
+                           PERFORM WRITE-OUTPUT
+                       END-IF
+               END-READ
+           END-PERFORM.
+           CLOSE CONN-FILE.
+           IF CONN-FOUND-ANY = 'N'
+               MOVE "No pending requests." TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+           END-IF.
 
        VIEW-PROFILE.
       *    Displays every line stored in the user's profile file
