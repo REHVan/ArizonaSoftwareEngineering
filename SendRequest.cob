@@ -2,8 +2,18 @@
       * Validates and stores pending connection requests
 
        SEND-CONNECTION-REQUEST.
+      *    KAN-135: block sending to yourself
+           IF FUNCTION TRIM(USER-NAME) =
+               FUNCTION TRIM(FOUND-USER-USERNAME)
+               MOVE "You cannot send a connection request to yourself."
+                   TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               EXIT PARAGRAPH
+           END-IF.
+
            SET REVERSE-REQUEST-NOT-FOUND TO TRUE.
            MOVE 'N' TO PENDING-REQUEST-EOF.
+           MOVE 'N' TO ALREADY-SENT-REQUEST.
 
            OPEN INPUT PENDING-REQUEST-FILE.
 
@@ -18,12 +28,20 @@
                        NOT AT END
                            MOVE PENDING-REQUEST-FILE-RECORD
                                TO PENDING-REQUEST-RECORD
-
+      *                    KAN-136: target already sent us a request
                            IF FUNCTION TRIM(REQUEST-SENDER) =
                                FUNCTION TRIM(FOUND-USER-USERNAME)
                                AND FUNCTION TRIM(REQUEST-RECIPIENT) =
                                FUNCTION TRIM(USER-NAME)
                                SET REVERSE-REQUEST-EXISTS TO TRUE
+                               MOVE 'Y' TO PENDING-REQUEST-EOF
+                           END-IF
+      *                    KAN-135: we already sent them a request
+                           IF FUNCTION TRIM(REQUEST-SENDER) =
+                               FUNCTION TRIM(USER-NAME)
+                               AND FUNCTION TRIM(REQUEST-RECIPIENT) =
+                               FUNCTION TRIM(FOUND-USER-USERNAME)
+                               MOVE 'Y' TO ALREADY-SENT-REQUEST
                                MOVE 'Y' TO PENDING-REQUEST-EOF
                            END-IF
                    END-READ
@@ -34,6 +52,10 @@
 
            IF REVERSE-REQUEST-EXISTS
                MOVE "This user already sent you a pending request."
+                   TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+           ELSE IF ALREADY-SENT-REQUEST = 'Y'
+               MOVE "You already sent this user a connection request."
                    TO LOG-MSG
                PERFORM WRITE-OUTPUT
            ELSE

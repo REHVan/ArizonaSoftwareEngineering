@@ -156,6 +156,7 @@
            01 SEARCH-FOUND PIC X(1) VALUE 'N'.
                88 SEARCH-FOUND-TRUE VALUE 'Y'.
                88 SEARCH-FOUND-FALSE VALUE 'N'.
+           01 ALREADY-SENT-REQUEST PIC X(1) VALUE 'N'.
        PROCEDURE DIVISION.
       *    Open input and output files at the start
            OPEN INPUT INPUT-FILE
@@ -550,6 +551,8 @@
                PERFORM WRITE-OUTPUT
                MOVE "5. Learn a New Skill" TO LOG-MSG
                PERFORM WRITE-OUTPUT
+               MOVE "6. View Pending Requests" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
       *    All menu selections, including profile viewing, are read
       *    from the designated input file rather than keyboard input
                READ INPUT-FILE
@@ -597,6 +600,8 @@
                    PERFORM FIND-SOMEONE
                WHEN "5"
                    PERFORM SKILL-MENU
+               WHEN "6"
+                   PERFORM VIEW-PENDING-REQUESTS
                WHEN OTHER
                    MOVE "Unknown Option" TO LOG-MSG
                    PERFORM WRITE-OUTPUT
@@ -971,6 +976,46 @@
                END-STRING
                PERFORM WRITE-PROFILE
            END-PERFORM.
+
+       VIEW-PENDING-REQUESTS.
+      *    KAN-138/139: display all PENDING-RECV requests for this user
+           MOVE 'N' TO PENDING-REQUEST-EOF.
+           MOVE 'N' TO REVERSE-REQUEST-FOUND.
+           OPEN INPUT PENDING-REQUEST-FILE.
+           IF PENDING-REQUEST-FILE-NOT-FOUND
+               CLOSE PENDING-REQUEST-FILE
+               MOVE "No pending requests." TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               EXIT PARAGRAPH
+           END-IF.
+           MOVE "--- Pending Connection Requests ---" TO LOG-MSG.
+           PERFORM WRITE-OUTPUT.
+           PERFORM UNTIL PENDING-REQUEST-EOF = 'Y'
+               READ PENDING-REQUEST-FILE
+                   AT END
+                       MOVE 'Y' TO PENDING-REQUEST-EOF
+                   NOT AT END
+                       MOVE PENDING-REQUEST-FILE-RECORD
+                           TO PENDING-REQUEST-RECORD
+                       IF FUNCTION TRIM(REQUEST-RECIPIENT) =
+                           FUNCTION TRIM(USER-NAME)
+                           MOVE 'Y' TO REVERSE-REQUEST-FOUND
+                           INITIALIZE STRING-MESSAGE
+                           STRING "Request from: " DELIMITED BY SIZE
+                                   FUNCTION TRIM(REQUEST-SENDER)
+                                   DELIMITED BY SIZE
+                             INTO STRING-MESSAGE
+                           END-STRING
+                           MOVE STRING-MESSAGE TO LOG-MSG
+                           PERFORM WRITE-OUTPUT
+                       END-IF
+               END-READ
+           END-PERFORM.
+           CLOSE PENDING-REQUEST-FILE.
+           IF REVERSE-REQUEST-FOUND = 'N'
+               MOVE "No pending requests." TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+           END-IF.
 
        VIEW-PROFILE.
       *    Retrieve and display all saved profile fields from the
