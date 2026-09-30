@@ -2,10 +2,10 @@ Welcome to InCollege!
 Log In
 Create New Account.
 Enter your choice: Log In
-Please enter your username: CarlaJones03
-Please enter your password: Carla2026#
+Please enter your username: AliceSmith01
+Please enter your password: Alice2026!
 You have successfully logged in
-Welcome, CarlaJones03!
+Welcome, AliceSmith01!
 1. Edit My Profile
 2. View My Profile
 3. Search for a job
@@ -14,10 +14,7 @@ Welcome, CarlaJones03!
 6. View Pending Requests
 Enter your choice: 6
 --- Pending Connection Requests ---
-Request from: AliceSmith01
-Request from: BrianLee02
-Request from: DavidBrown04
-Request from: EmmaWilson05
+No pending requests.
 1. Edit My Profile
 2. View My Profile
 3. Search for a job

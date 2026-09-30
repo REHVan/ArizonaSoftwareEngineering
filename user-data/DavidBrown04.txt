@@ -1,0 +1,14 @@
+Name: David Brown
+University: Northern University
+Major: Data Science
+Graduation Year: 2028
+About Me: Interested in data analysis and machine learning.
+Experience:
+ Title: Data Analytics Intern
+ Company: Insight Analytics
+ Dates: Summer 2026
+ Description: Analyzed customer data and created reports.
+Education:
+ Degree: Bachelor of Science in Data Science
+ University: Northern University
+ Years: 2024-2028

@@ -1,0 +1,14 @@
+Name: Brian Lee
+University: Central University
+Major: Business Administration
+Graduation Year: 2028
+About Me: Interested in project management.
+Experience:
+ Title: Business Operations Intern
+ Company: Summit Solutions
+ Dates: Summer 2026
+ Description: Assisted with project planning and reports.
+Education:
+ Degree: Bachelor of Science in Business Administration
+ University: Central University
+ Years: 2024-2028

@@ -1,13 +1,13 @@
-Name: John Doe
+Name: Alice Smith
 University: State University
 Major: Computer Science
 Graduation Year: 2027
-About Me: Interested in software development.
+About Me: Interested in web development.
 Experience:
- Title: Software Engineering Intern
- Company: Tech Solutions
+ Title: Web Development Intern
+ Company: Bright Tech
  Dates: Summer 2026
- Description: Developed software applications.
+ Description: Built and tested company websites.
 Education:
  Degree: Bachelor of Science in Computer Science
  University: State University

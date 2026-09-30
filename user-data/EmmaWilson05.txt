@@ -1,0 +1,14 @@
+Name: Emma Wilson
+University: Western University
+Major: Information Technology
+Graduation Year: 2027
+About Me: Interested in cybersecurity and networking.
+Experience:
+ Title: IT Support Intern
+ Company: Secure Systems
+ Dates: Summer 2026
+ Description: Resolved technical issues and configured networks.
+Education:
+ Degree: Bachelor of Science in Information Technology
+ University: Western University
+ Years: 2023-2027

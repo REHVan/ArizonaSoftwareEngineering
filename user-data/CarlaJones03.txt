@@ -1,0 +1,14 @@
+Name: Carla Jones
+University: Coastal University
+Major: Mechanical Engineering
+Graduation Year: 2027
+About Me: Interested in robotics and product design.
+Experience:
+ Title: Engineering Intern
+ Company: Precision Manufacturing
+ Dates: Summer 2026
+ Description: Designed and tested mechanical components.
+Education:
+ Degree: Bachelor of Science in Mechanical Engineering
+ University: Coastal University
+ Years: 2023-2027
