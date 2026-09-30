@@ -1008,6 +1008,7 @@
                            TO PENDING-REQUEST-RECORD
                        IF FUNCTION TRIM(REQUEST-RECIPIENT) =
                            FUNCTION TRIM(USER-NAME)
+                           AND FUNCTION TRIM(REQUEST-STATUS) = "PENDING"
                            MOVE 'Y' TO REVERSE-REQUEST-FOUND
                            INITIALIZE STRING-MESSAGE
                            STRING "Request from: " DELIMITED BY SIZE
