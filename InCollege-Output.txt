@@ -13,28 +13,65 @@ Welcome, BrianLee02!
 5. Learn a New Skill
 6. View Pending Requests
 Enter your choice: 4
-Enter the full name of the person you are looking for: Alice Smith
+Enter the full name of the person you are looking for: David Brown
 --- Found User Profile ---
-==== Profile for Alice Smith
-Name: Alice Smith
-University: State University
-Major: Computer Science
-Graduation Year: 2027
-About Me: Interested in web development.
+==== Profile for David Brown
+Name: David Brown
+University: Northern University
+Major: Data Science
+Graduation Year: 2028
+About Me: Interested in data analysis and machine learning.
 Experience:
- Title: Web Development Intern
- Company: Bright Tech
+ Title: Data Analytics Intern
+ Company: Insight Analytics
  Dates: Summer 2026
- Description: Built and tested company websites.
+ Description: Analyzed customer data and created reports.
 Education:
- Degree: Bachelor of Science in Computer Science
- University: State University
+ Degree: Bachelor of Science in Data Science
+ University: Northern University
+ Years: 2024-2028
+-------------------------
+1. Send Connection Request
+2. Back to Main Menu
+Enter your choice: 2
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+6. View Pending Requests
+Enter your choice: 4
+Enter the full name of the person you are looking for: Emma Wilson
+--- Found User Profile ---
+==== Profile for Emma Wilson
+Name: Emma Wilson
+University: Western University
+Major: Information Technology
+Graduation Year: 2027
+About Me: Interested in cybersecurity and networking.
+Experience:
+ Title: IT Support Intern
+ Company: Secure Systems
+ Dates: Summer 2026
+ Description: Resolved technical issues and configured networks.
+Education:
+ Degree: Bachelor of Science in Information Technology
+ University: Western University
  Years: 2023-2027
 -------------------------
 1. Send Connection Request
 2. Back to Main Menu
 Enter your choice: 1
-This user already sent you a pending request.
+Connection request sent to Emma Wilson.
+1. Edit My Profile
+2. View My Profile
+3. Search for a job
+4. Find someone you know
+5. Learn a New Skill
+6. View Pending Requests
+Enter your choice: 6
+--- Pending Connection Requests ---
+Request from: AliceSmith01
 1. Edit My Profile
 2. View My Profile
 3. Search for a job
