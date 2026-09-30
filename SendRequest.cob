@@ -14,6 +14,7 @@
            SET REVERSE-REQUEST-NOT-FOUND TO TRUE.
            MOVE 'N' TO PENDING-REQUEST-EOF.
            MOVE 'N' TO ALREADY-SENT-REQUEST.
+           SET NOT-CONNECTED TO TRUE.
 
            OPEN INPUT PENDING-REQUEST-FILE.
 
@@ -29,7 +30,20 @@
                            MOVE PENDING-REQUEST-FILE-RECORD
                                TO PENDING-REQUEST-RECORD
       *                    KAN-136: target already sent us a request
-                           IF FUNCTION TRIM(REQUEST-SENDER) =
+                           IF REQUEST-STATUS = "CONNECTED" 
+                               AND ((FUNCTION TRIM(REQUEST-SENDER) =
+                               FUNCTION TRIM(FOUND-USER-USERNAME)
+                               AND FUNCTION TRIM(REQUEST-RECIPIENT) =
+                               FUNCTION TRIM(USER-NAME))
+
+                               OR (FUNCTION TRIM (REQUEST-SENDER) = 
+                               FUNCTION TRIM (USER-NAME) AND
+                               FUNCTION TRIM(REQUEST-RECIPIENT) =
+                               FUNCTION TRIM (FOUND-USER-USERNAME)))
+                               SET ALREADY-CONNECTED TO TRUE
+                            END-IF
+                           IF REQUEST-STATUS = "PENDING"
+                           AND FUNCTION TRIM(REQUEST-SENDER) =
                                FUNCTION TRIM(FOUND-USER-USERNAME)
                                AND FUNCTION TRIM(REQUEST-RECIPIENT) =
                                FUNCTION TRIM(USER-NAME)
@@ -37,7 +51,8 @@
                                MOVE 'Y' TO PENDING-REQUEST-EOF
                            END-IF
       *                    KAN-135: we already sent them a request
-                           IF FUNCTION TRIM(REQUEST-SENDER) =
+                           IF REQUEST-STATUS = "PENDING"
+                           AND FUNCTION TRIM(REQUEST-SENDER) =
                                FUNCTION TRIM(USER-NAME)
                                AND FUNCTION TRIM(REQUEST-RECIPIENT) =
                                FUNCTION TRIM(FOUND-USER-USERNAME)
@@ -58,9 +73,14 @@
                MOVE "You already sent this user a connection request."
                    TO LOG-MSG
                PERFORM WRITE-OUTPUT
+           ELSE IF ALREADY-CONNECTED
+               MOVE "You are already connected with this person."
+                   TO LOG-MSG
+               PERFORM WRITE-OUTPUT
            ELSE
                MOVE USER-NAME TO REQUEST-SENDER
                MOVE FOUND-USER-USERNAME TO REQUEST-RECIPIENT
+               MOVE "PENDING" TO REQUEST-STATUS
                MOVE PENDING-REQUEST-RECORD
                    TO PENDING-REQUEST-FILE-RECORD
 

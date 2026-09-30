@@ -21,7 +21,8 @@
       *    Existing accounts file
            SELECT ACCOUNTS-FILE
            ASSIGN TO "InCollege-Accounts.txt"
-           ORGANIZATION IS LINE SEQUENTIAL.
+           ORGANIZATION IS LINE SEQUENTIAL
+           FILE STATUS IS ACCOUNTS-FILE-STATUS.
 
            SELECT PROFILE-FILE
            ASSIGN TO USER-DATA
@@ -52,7 +53,7 @@
        FD PROFILE-FILE.
            01 PROFILE-RECORD PIC X(300).
        FD PENDING-REQUEST-FILE.
-           01 PENDING-REQUEST-FILE-RECORD PIC X(160).
+           01 PENDING-REQUEST-FILE-RECORD PIC X(180).
           
        WORKING-STORAGE SECTION.
            COPY "ViewRequests.cob".
@@ -63,7 +64,8 @@
                88 INPUT-NOT-FOUND VALUE "35".
            01 OUTPUT-FILE-STATUS PIC XX.
                88 OUTPUT-NOT-FOUND VALUE "35".
-           
+           01 ACCOUNTS-FILE-STATUS PIC XX.
+               88 ACCOUNTS-NOT-FOUND VALUE "35".
            01 PROFILE-FILE-STATUS PIC XX.
                88 PROFILE-FOUND VALUE "00".
                88 PROFILE-NOT-FOUND VALUE "35".
@@ -157,16 +159,23 @@
                88 SEARCH-FOUND-TRUE VALUE 'Y'.
                88 SEARCH-FOUND-FALSE VALUE 'N'.
            01 ALREADY-SENT-REQUEST PIC X(1) VALUE 'N'.
+           01 CONNECTED-STATUS PIC X(1) VALUE 'N'.
+               88 ALREADY-CONNECTED VALUE 'Y'.
+               88 NOT-CONNECTED VALUE 'N'.
        PROCEDURE DIVISION.
       *    Open input and output files at the start
            OPEN INPUT INPUT-FILE
            IF INPUT-NOT-FOUND THEN
                STOP RUN
            END-IF.
-           OPEN OUTPUT OUTPUT-FILE 
-           IF OUTPUT-NOT-FOUND THEN
-               STOP RUN
+           OPEN INPUT ACCOUNTS-FILE
+           IF ACCOUNTS-NOT-FOUND THEN
+               OPEN OUTPUT ACCOUNTS-FILE
+               CLOSE ACCOUNTS-FILE
+           ELSE
+               CLOSE ACCOUNTS-FILE
            END-IF.
+           OPEN OUTPUT OUTPUT-FILE.
 
        MAIN.
       *    Title, will be presented again if num accounts > 5 AND
@@ -1258,25 +1267,35 @@
            CLOSE PROFILE-FILE.
            MOVE "-------------------------" TO LOG-MSG.
            PERFORM WRITE-OUTPUT.
-
-           MOVE "1. Send Connection Request" TO LOG-MSG.
-           PERFORM WRITE-OUTPUT.
-           MOVE "2. Back to Main Menu" TO LOG-MSG.
-           PERFORM WRITE-OUTPUT.
-           MOVE "Enter your choice:" TO LOG-MSG.
-           PERFORM WRITE-OUTPUT.
-
-           READ INPUT-FILE
-               AT END
-                   MOVE "2" TO CONNECTION-CHOICE
-               NOT AT END
-                   MOVE FUNCTION TRIM(USER-INPUT)
-                       TO CONNECTION-CHOICE
-                   MOVE FUNCTION TRIM(USER-INPUT) TO LOG-MSG
+           MOVE SPACES TO CONNECTION-CHOICE
+           PERFORM UNTIL CONNECTION-CHOICE = '1' 
+               OR CONNECTION-CHOICE ='2'
+               MOVE "1. Send Connection Request" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               MOVE "2. Back to Main Menu" TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               READ INPUT-FILE
+                   AT END
+                       MOVE "Input ended prematurely" TO LOG-MSG
+                       PERFORM WRITE-OUTPUT
+                       CLOSE INPUT-FILE OUTPUT-FILE
+                       STOP RUN
+               END-READ
+               MOVE FUNCTION TRIM(USER-INPUT) TO CONNECTION-CHOICE
+               INITIALIZE STRING-MESSAGE
+               STRING "Enter your choice: " DELIMITED BY SIZE
+                   CONNECTION-CHOICE DELIMITED BY space
+                 INTO STRING-MESSAGE
+               END-STRING
+               MOVE STRING-MESSAGE TO LOG-MSG
+               PERFORM WRITE-OUTPUT
+               INITIALIZE STRING-MESSAGE
+               IF CONNECTION-CHOICE NOT = '1' AND NOT = '2'
+                   MOVE "Invalid choice, try again" TO LOG-MSG
                    PERFORM WRITE-OUTPUT
-           END-READ.
-
-           IF CONNECTION-CHOICE = "1"
+               END-IF
+           END-PERFORM.
+           IF CONNECTION-CHOICE = '1'
                PERFORM SEND-CONNECTION-REQUEST
            END-IF.
 
