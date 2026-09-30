@@ -2,22 +2,39 @@ Welcome to InCollege!
 Log In
 Create New Account.
 Enter your choice: Log In
-Please enter your username: CarlaJones03
-Please enter your password: Carla2026#
+Please enter your username: BrianLee02
+Please enter your password: Brian2026@
 You have successfully logged in
-Welcome, CarlaJones03!
+Welcome, BrianLee02!
 1. Edit My Profile
 2. View My Profile
 3. Search for a job
 4. Find someone you know
 5. Learn a New Skill
 6. View Pending Requests
-Enter your choice: 6
---- Pending Connection Requests ---
-Request from: AliceSmith01
-Request from: BrianLee02
-Request from: DavidBrown04
-Request from: EmmaWilson05
+Enter your choice: 4
+Enter the full name of the person you are looking for: Alice Smith
+--- Found User Profile ---
+==== Profile for Alice Smith
+Name: Alice Smith
+University: State University
+Major: Computer Science
+Graduation Year: 2027
+About Me: Interested in web development.
+Experience:
+ Title: Web Development Intern
+ Company: Bright Tech
+ Dates: Summer 2026
+ Description: Built and tested company websites.
+Education:
+ Degree: Bachelor of Science in Computer Science
+ University: State University
+ Years: 2023-2027
+-------------------------
+1. Send Connection Request
+2. Back to Main Menu
+Enter your choice: 1
+This user already sent you a pending request.
 1. Edit My Profile
 2. View My Profile
 3. Search for a job
