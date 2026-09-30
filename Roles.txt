@@ -1,5 +1,5 @@
-Lynberg Jean - Scrum Master
-Joanna Johnson - Developer #1
-Rafael Hernandez Vantuyl - Developer #2
-Andy Ho- Tester #1
-Steven Huynh - Tester #2
+Steven Huynh - Scrum Master
+Lynberg Jean - Developer #1
+Joanna Johnson - Developer #2
+Rafael Hernandez Vantuyl - Tester #1
+Andy Ho - Tester #2
